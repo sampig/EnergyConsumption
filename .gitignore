@@ -1,0 +1,14 @@
+
+*.jar
+*.apk
+
+*.iml
+.gradle
+.DS_Store
+
+# ScannerApp
+/ScannerApp/local.properties
+/ScannerApp/.idea
+/ScannerApp/build
+/ScannerApp/captures
+/ScannerApp/gradle
