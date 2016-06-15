@@ -1,3 +1,21 @@
 <resources>
-    <string name="app_name">Energy Consumption Scanner</string>
+    <string name="app_name">Energy Scanner</string>
+    <string name="app_name_full">Energy Consumption Scanner</string>
+
+    <!-- Common -->
+    <string name="button_ok">OK</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_discard">Discard</string>
+
+    <string name="menu_settings">Setting</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+
+    <string name="activity_scanner_name">Scanner</string>
+    <string name="msg_scan_default">Put the QR code in the rectangle</string>
+    <string name="scan_result_text">Scan Result Text</string>
+    <string name="msg_scan_time">Scanning Time</string>
+    <string name="msg_scan_raw_text">Device ID</string>
+    <string name="button_scan_detail_info">Device Detail</string>
+    <string name="button_scan_save_history">Save to History</string>
 </resources>

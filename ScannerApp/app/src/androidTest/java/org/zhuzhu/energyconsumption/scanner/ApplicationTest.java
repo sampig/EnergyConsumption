@@ -1,4 +1,4 @@
-package org.zhuzhu.energyconsumptionscanner;
+package org.zhuzhu.energyconsumption.scanner;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

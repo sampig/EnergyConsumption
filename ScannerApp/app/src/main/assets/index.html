@@ -1,0 +1,37 @@
+<html>
+<head>
+    <title>Help</title>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Time', 'Energy'],
+          ['14:00',  103],
+          ['15:00',  100],
+          ['16:00',  117],
+          ['17:00',  66],
+          ['18:00',  100],
+          ['19:00',  117],
+          ['20:00',  66],
+          ['21:00',  103]
+        ]);
+
+        var options = {
+          curveType: 'function',
+          legend: { position: 'none' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        chart.draw(data, options);
+      }
+    </script>
+</head>
+<body>
+<div id="curve_chart" style="width: 180px; height: 100px"></div>
+<p>This is a help page.</p>
+</body>
+</html>

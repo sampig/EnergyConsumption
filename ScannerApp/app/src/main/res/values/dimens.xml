@@ -2,4 +2,9 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!-- qr -->
+    <dimen name="qr_standard_padding">8dip</dimen>
+    <dimen name="qr_half_padding">4dip</dimen>
+
 </resources>
