@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 ZXing authors
+ * Copyright (C) 2016 Chenfeng Zhu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,11 +39,13 @@ import java.util.concurrent.CountDownLatch;
  * This thread does all the heavy lifting of decoding the images.
  *
  * @author dswitkin@google.com (Daniel Switkin)
+ * @author Chenfeng Zhu
  */
 public final class DecodeThread extends Thread {
 
   public static final String BARCODE_BITMAP = "barcode_bitmap";
   public static final String BARCODE_SCALED_FACTOR = "barcode_scaled_factor";
+  public static final String BARCODE_POSITION = "barcode_position";
 
   private final ScannerActivity activity;
   private final Map<DecodeHintType,Object> hints;
@@ -92,6 +95,11 @@ public final class DecodeThread extends Thread {
       hints.put(DecodeHintType.CHARACTER_SET, characterSet);
     }
     hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, resultPointCallback);
+
+    // for multiple qr codes reader
+    hints.put(DecodeHintType.TRY_HARDER, true);
+    //hints.put(DecodeHintType.PURE_BARCODE, true);
+
     Log.i("DecodeThread", "Hints: " + hints);
   }
 

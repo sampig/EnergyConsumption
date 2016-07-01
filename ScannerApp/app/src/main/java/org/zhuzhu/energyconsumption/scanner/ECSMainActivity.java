@@ -4,10 +4,11 @@
 package org.zhuzhu.energyconsumption.scanner;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 /**
  * This is the application for Energy Consumption.
@@ -17,17 +18,19 @@ import android.widget.Button;
 public class ECSMainActivity extends AppCompatActivity {
 
     // TODO: change the type of button
-    protected Button btnScanner;
+    protected ImageButton btnScanner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ecs_main);
-        this.startScanner();
+//        setContentView(R.layout.activity_ecs_main);
+//        this.startScanner();
+        Intent intent = new Intent(ECSMainActivity.this, ScannerActivity.class);
+        startActivity(intent);
     }
 
     protected void startScanner() {
-        btnScanner = (Button) findViewById(R.id.qr_btnScanner);
+        btnScanner = (ImageButton) findViewById(R.id.qr_btnScanner);
         btnScanner.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(ECSMainActivity.this, ScannerActivity.class);

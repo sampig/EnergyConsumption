@@ -92,7 +92,7 @@ public final class ScannerActivityHandler extends Handler {
                     }
                     scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);
                 }
-                activity.handleDecode((Result) message.obj, bitmap, scaleFactor);
+                activity.handleDecode((Result[]) message.obj, bitmap, scaleFactor);
                 break;
             case R.id.decode_failed:
                 state = State.PREVIEW;
@@ -123,6 +123,7 @@ public final class ScannerActivityHandler extends Handler {
             state = State.PREVIEW;
             cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
             activity.drawViewfinder();
+            activity.resetResultView(true);
         }
     }
 

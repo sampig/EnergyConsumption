@@ -63,20 +63,23 @@
 
             <LinearLayout android:id="@+id/result_view_center"
                 android:orientation="vertical"
-                android:layout_width="260dip"
-                android:layout_height="260dip"
+                android:layout_width="270dip"
+                android:layout_height="wrap_content"
                 android:gravity="center|bottom">
                 <!-- Graph Web View -->
-                <LinearLayout android:layout_width="match_parent"
-                    android:layout_height="200dip"
+                <LinearLayout
+                    android:id="@+id/layout_webView1"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dip"
                     android:maxWidth="260dip"
                     android:maxHeight="260dip"
                     android:adjustViewBounds="true"
                     android:scaleType="centerInside">
                     <WebView
                         android:id="@+id/webView1"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:background="@color/result_graph_background"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_alignParentBottom="true"
                         android:layout_alignParentLeft="true"
                         android:layout_alignParentRight="true"
@@ -141,6 +144,13 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <RelativeLayout android:id="@+id/result_graph_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:padding="@dimen/qr_standard_padding"
+        android:orientation="horizontal">
+    </RelativeLayout>
 
     <!-- Text in bottom when scanning -->
     <TextView android:id="@+id/status_view"

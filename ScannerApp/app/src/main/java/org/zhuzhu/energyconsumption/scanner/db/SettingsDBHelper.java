@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2016 Chenfeng Zhu
- */
 package org.zhuzhu.energyconsumption.scanner.db;
 
 import android.content.Context;
@@ -9,29 +6,32 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * This is to manipulate the database which saves the history information.
- *
  * @author Chenfeng Zhu
  */
-public class HistoryDBHelper extends SQLiteOpenHelper {
+public class SettingsDBHelper extends SQLiteOpenHelper {
 
     private static final int DB_VERSION = 1;
     private static final String DB_NAME = "ec_scanner.db";
 
-    static final String TABLE_NAME = "ec_history";
+    static final String TABLE_NAME = "ec_settings";
+    static final String KEY_COL = "keyname";
+    static final String VALUE_COL = "keyvalue";
 
-    private String create_sql = "CREATE TABLE " + TABLE_NAME + "("
-            +");";
+    static final String WEBSERVER_KEY = "webserver";
 
-    public HistoryDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
+    private String create_sql = "CREATE TABLE " + TABLE_NAME + "( " + KEY_COL + " TEXT PRIMARY KEY" + ", " + VALUE_COL + " TEXT);";
+
+    private String init_data_sql = "INSERT INTO "+ TABLE_NAME + "(" + KEY_COL + ", " + VALUE_COL + ") VALUES ('webserver' ,'http://zhuzhu-sampig.rhcloud.com/ECWebServer/ecws/deviceID');";
+
+    public SettingsDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
     }
 
-    public HistoryDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version, DatabaseErrorHandler errorHandler) {
+    public SettingsDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version, DatabaseErrorHandler errorHandler) {
         super(context, name, factory, version, errorHandler);
     }
 
-    public HistoryDBHelper(Context context) {
+    public SettingsDBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
@@ -45,4 +45,5 @@ public class HistoryDBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
+
 }
