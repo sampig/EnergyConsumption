@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Energy Consumption</title>
+</head>
+<body>
+	<h1>Energy Consumption</h1>
+	<h2>Data Format</h2>
+
+	<p>Information contained in QR Code. There are 3 types:</p>
+	<ol>
+		<li>Plain Text:
+			<ol>
+				<li>only Device ID</li>
+				<li>only URL (start with <em>http://</em>)
+				</li>
+			</ol>
+		</li>
+		<li>JSON Text: <code>{'deviceID':'device_id','webserver':'url','direct':boolean}</code></li>
+	</ol>
+
+	<p>Response Data: <a href="ecws/deviceID/660BF0945365A2A4" target="_blank">ecws/deviceID/{deviceID}[/quantity]</a></p>
+	<div class="highlight highlight-source-json">
+		<pre>{
+    <span class="pl-ii">'DeviceID'</span>:<span class="pl-ii">'device_id'</span>,
+    <span class="pl-ii">'Data'</span>:{
+        <span class="pl-ii">'2016-06-29</span> <span class="pl-ii">12</span>:<span
+				class="pl-c1">36</span><span class="pl-ii">:</span><span
+				class="pl-c1">25</span><span class="pl-ii">':</span><span
+				class="pl-c1">33.3137</span>,
+        <span class="pl-ii">'time'</span>:<span class="pl-ii">value</span>
+    }
+}</pre>
+	</div>
+
+	<p>Setting via QR Code:</p>
+	<div class="highlight highlight-source-js">
+		<pre>
+			<span class="pl-c1">SETTINGS</span><span class="pl-k">=</span>{<span
+				class="pl-s"><span class="pl-pds">'</span>keyname<span
+				class="pl-pds">'</span></span><span class="pl-k">:</span><span class="pl-s"><span
+				class="pl-pds">'</span>value<span class="pl-pds">'</span></span>}
+<span class="pl-c">// 'webserver':'http://zhuzhu-sampig.rhcloud.com/ECWebServer/ecws/deviceID/'</span>
+<span class="pl-c">// 'quantity':60</span>
+		</pre>
+	</div>
+	<p><a href="ecws/allDevices" target="_blank">all devices</a></p>
+
+</body>
+</html>
