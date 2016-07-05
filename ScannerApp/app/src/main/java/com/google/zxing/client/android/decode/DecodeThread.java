@@ -27,7 +27,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.ResultPointCallback;
 
-import org.zhuzhu.energyconsumption.scanner.ScannerActivity;
+import org.zhuzhu.energyconsumption.scanner.ECScannerMainActivity;
 
 import java.util.Collection;
 import java.util.EnumMap;
@@ -47,12 +47,12 @@ public final class DecodeThread extends Thread {
   public static final String BARCODE_SCALED_FACTOR = "barcode_scaled_factor";
   public static final String BARCODE_POSITION = "barcode_position";
 
-  private final ScannerActivity activity;
+  private final ECScannerMainActivity activity;
   private final Map<DecodeHintType,Object> hints;
   private Handler handler;
   private final CountDownLatch handlerInitLatch;
 
-  public DecodeThread(ScannerActivity activity,
+  public DecodeThread(ECScannerMainActivity activity,
                Collection<BarcodeFormat> decodeFormats,
                Map<DecodeHintType,?> baseHints,
                String characterSet,

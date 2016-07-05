@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.webkit.WebView;
 
-import org.zhuzhu.energyconsumption.scanner.utils.HTMLGenerator;
-
 /**
  * This is an activity to open the HELP page.
  *
@@ -27,12 +25,13 @@ public class HelpActivity extends Activity {
         setContentView(R.layout.activity_help);
         webView = (WebView) findViewById(R.id.help_contents);
         if (savedInstanceState == null) {
-            String content = HTMLGenerator.getHTMLContent(null);
+//            String content = HTMLGenerator.getHTMLContent(null);
 //            WebSettings webSettings = webView.getSettings();
 //            webSettings.setJavaScriptEnabled(true);
 //            webView.requestFocusFromTouch();
 //            webView.loadDataWithBaseURL( "file:///android_asset/", content, "text/html", "utf-8", null);
-            webView.loadUrl(BASE_URL + "index.html");
+             webView.loadUrl(BASE_URL + "index.html");
+//            webView.loadUrl("http://ecserver-sampig.rhcloud.com/ECWebServer");
         } else {
             webView.restoreState(savedInstanceState);
         }

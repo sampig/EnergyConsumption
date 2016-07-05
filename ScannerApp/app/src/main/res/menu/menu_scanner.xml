@@ -5,18 +5,12 @@
         android:id="@+id/menu_settings"
         android:icon="@android:drawable/ic_menu_preferences"
         android:orderInCategory="1"
-        android:title="@string/menu_settings"
+        android:title="@string/menu_show_settings"
         app:showAsAction="withText" />
     <item
         android:id="@+id/menu_help"
         android:icon="@android:drawable/ic_menu_help"
         android:orderInCategory="2"
         android:title="@string/menu_help"
-        app:showAsAction="withText" />
-    <item
-        android:id="@+id/menu_test"
-        android:icon="@android:drawable/ic_menu_help"
-        android:orderInCategory="3"
-        android:title="test"
         app:showAsAction="withText" />
 </menu>

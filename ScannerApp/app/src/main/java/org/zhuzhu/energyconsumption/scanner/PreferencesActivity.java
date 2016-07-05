@@ -7,9 +7,13 @@ import android.app.Activity;
 import android.os.Bundle;
 
 /**
- * @author Chenfeng ZHU
+ * This is an activity for preferences setting.
+ *
+ * @author Chenfeng Zhu
  */
+@Deprecated
 public class PreferencesActivity extends Activity {
+    //TODO: useless for now.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -24,6 +24,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
@@ -46,7 +47,7 @@ public final class ScannerActivityHandler extends Handler {
 
     private static final String TAG = ScannerActivityHandler.class.getSimpleName();
 
-    private final ScannerActivity activity;
+    private final ECScannerMainActivity activity;
     private final DecodeThread decodeThread;
     private State state;
     private final CameraManager cameraManager;
@@ -57,7 +58,7 @@ public final class ScannerActivityHandler extends Handler {
         DONE
     }
 
-    ScannerActivityHandler(ScannerActivity activity,
+    ScannerActivityHandler(ECScannerMainActivity activity,
                            Collection<BarcodeFormat> decodeFormats,
                            Map<DecodeHintType, ?> baseHints,
                            String characterSet,
@@ -82,7 +83,7 @@ public final class ScannerActivityHandler extends Handler {
                 state = State.SUCCESS;
                 Bundle bundle = message.getData();
                 Bitmap bitmap = null;
-                float scaleFactor = 1.0f;
+                // float scaleFactor = 1.0f;
                 if (bundle != null) {
                     byte[] compressedBitmap = bundle.getByteArray(DecodeThread.BARCODE_BITMAP);
                     if (compressedBitmap != null) {
@@ -90,9 +91,9 @@ public final class ScannerActivityHandler extends Handler {
                         // Mutable copy:
                         bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
                     }
-                    scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);
+                    // scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);
                 }
-                activity.handleDecode((Result[]) message.obj, bitmap, scaleFactor);
+                activity.handleDecode((Result[]) message.obj, bitmap);
                 break;
             case R.id.decode_failed:
                 state = State.PREVIEW;
@@ -113,7 +114,9 @@ public final class ScannerActivityHandler extends Handler {
         try {
             // Wait at most half a second; should be enough time, and onPause() will timeout quickly
             decodeThread.join(500L);
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+            Log.e(TAG, e.getMessage());
+        }
         removeMessages(R.id.decode_succeeded);
         removeMessages(R.id.decode_failed);
     }

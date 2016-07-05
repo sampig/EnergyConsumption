@@ -4,9 +4,6 @@
 package org.zhuzhu.energyconsumption.scanner.result;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.view.KeyEvent;
-import android.widget.Toast;
 
 import com.google.zxing.Result;
 import com.google.zxing.client.result.ParsedResult;
@@ -21,8 +18,8 @@ import org.zhuzhu.energyconsumption.scanner.R;
 public final class ScanningResultHandler extends ResultHandler {
 
     private static final int[] buttons = {
-            R.string.button_scan_detail_info,
-            R.string.button_scan_save_history,
+//            R.string.button_scan_detail_info,
+//            R.string.button_scan_save_history,
             R.string.button_discard
     };
 
@@ -42,18 +39,18 @@ public final class ScanningResultHandler extends ResultHandler {
 
     @Override
     public void handleButtonPress(int index) {
-        String text = super.getResult().getDisplayResult();
-        switch (index) {
-            case 0:
-                this.viewDetail(text);
-                break;
-            case 1:
-                this.saveToHistory(text);
-                break;
-            case 2:
-                super.getActivity().onKeyDown(KeyEvent.KEYCODE_BACK, null);
-                break;
-        }
+//        String text = super.getParsedResult().getDisplayResult();
+//        switch (index) {
+//            case 0:
+//                this.viewDetail(text);
+//                break;
+//            case 1:
+//                this.saveToHistory(text);
+//                break;
+//            case 2:
+//                super.getActivity().onKeyDown(KeyEvent.KEYCODE_BACK, null);
+//                break;
+//        }
     }
 
     /**
@@ -61,23 +58,23 @@ public final class ScanningResultHandler extends ResultHandler {
      *
      * @param deviceId ID of device
      */
-    private void viewDetail(String deviceId) {
-        Intent intent = new Intent();
-        if (intent.getAction() == null) {
-            Toast.makeText(super.getActivity().getApplicationContext(),
-                    " Detail function has not been done: (" + deviceId + ')',
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
+//    private void viewDetail(String deviceId) {
+//        Intent intent = new Intent();
+//        if (intent.getAction() == null) {
+//            Toast.makeText(super.getActivity().getApplicationContext(),
+//                    " Detail function has not been done: (" + deviceId + ')',
+//                    Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
     /**
      * Save the scanning result into history.
      *
      * @param deviceId ID of device
      */
-    private void saveToHistory(String deviceId) {
-        Toast.makeText(super.getActivity().getApplicationContext(),
-                " Save function has not been done: (" + deviceId + ')',
-                Toast.LENGTH_SHORT).show();
-    }
+//    private void saveToHistory(String deviceId) {
+//        Toast.makeText(super.getActivity().getApplicationContext(),
+//                " Save function has not been done: (" + deviceId + ')',
+//                Toast.LENGTH_SHORT).show();
+//    }
 }

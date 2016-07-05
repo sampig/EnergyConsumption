@@ -18,7 +18,7 @@ public class ResultModel implements Comparable<ResultModel> {
     private String deviceID;
     private Date date;
     private WebView webView;
-    private List<DataValue> dataValueList;
+    private List<Double> dataValueList;
     private Result result;
 
     public ResultModel() {
@@ -53,11 +53,11 @@ public class ResultModel implements Comparable<ResultModel> {
         this.webView = webView;
     }
 
-    public List<DataValue> getDataValueList() {
+    public List<Double> getDataValueList() {
         return dataValueList;
     }
 
-    public void setDataValueList(List<DataValue> dataValueList) {
+    public void setDataValueList(List<Double> dataValueList) {
         this.dataValueList = dataValueList;
     }
 
@@ -85,6 +85,9 @@ public class ResultModel implements Comparable<ResultModel> {
         boolean flag = false;
         if (v instanceof ResultModel) {
             ResultModel other = (ResultModel) v;
+            if (this.getDeviceID() == null) {
+                return false;
+            }
             flag = this.getDeviceID().equalsIgnoreCase(other.getDeviceID());
         }
         return flag;
@@ -102,30 +105,4 @@ public class ResultModel implements Comparable<ResultModel> {
         return super.toString() + "(" + deviceID + ")";
     }
 
-    public class DataValue {
-
-        private String timestamp;
-        private String value;
-
-        public DataValue(String timestamp, String value) {
-            this.timestamp = timestamp;
-            this.value = value;
-        }
-
-        public String getTimestamp() {
-            return timestamp;
-        }
-
-        public void setTimestamp(String timestamp) {
-            this.timestamp = timestamp;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-    }
 }

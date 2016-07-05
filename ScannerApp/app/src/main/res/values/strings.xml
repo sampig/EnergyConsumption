@@ -7,17 +7,20 @@
     <string name="button_cancel">Cancel</string>
     <string name="button_discard">Discard</string>
 
-    <string name="menu_settings">Setting</string>
+    <!-- Settings -->
+    <string name="menu_show_settings">Show Settings</string>
+    <string name="msg_set_webserver">Set Web Server: </string>
+    <string name="msg_set_quantity">Set the quantity of data in 1 Hour: </string>
+
     <string name="menu_help">Help</string>
     <string name="menu_about">About</string>
 
     <string name="msg_error">Error</string>
 
+    <!-- Scanner Main -->
     <string name="activity_scanner_name">Scanner</string>
     <string name="msg_scan_default">Put the QR code in the rectangle</string>
-    <string name="scan_result_text">Scan Result Text</string>
-    <string name="msg_scan_time">Scanning Time</string>
-    <string name="msg_scan_raw_text">Device ID</string>
-    <string name="button_scan_detail_info">Device Detail</string>
-    <string name="button_scan_save_history">Save to History</string>
+    <string name="msg_scan_result_no_data">No data to display.</string>
+    <string name="msg_scan_process">In processing... Please wait...</string>
+
 </resources>

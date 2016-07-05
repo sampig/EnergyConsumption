@@ -31,24 +31,22 @@ import com.google.zxing.client.result.ParsedResult;
  */
 public abstract class ResultHandler {
 
-    public static final int MAX_BUTTON_COUNT = 3;
-
-    private final ParsedResult result;
+    private final ParsedResult parsedResult;
     private final Activity activity;
     private final Result rawResult;
 
-    ResultHandler(Activity activity, ParsedResult result) {
-        this(activity, result, null);
+    ResultHandler(Activity activity, ParsedResult parsedResult) {
+        this(activity, parsedResult, null);
     }
 
-    ResultHandler(Activity activity, ParsedResult result, Result rawResult) {
-        this.result = result;
+    ResultHandler(Activity activity, ParsedResult parsedResult, Result rawResult) {
+        this.parsedResult = parsedResult;
         this.activity = activity;
         this.rawResult = rawResult;
     }
 
-    public final ParsedResult getResult() {
-        return result;
+    public final ParsedResult getParsedResult() {
+        return parsedResult;
     }
 
     public final Result getRawResult() {
@@ -87,7 +85,7 @@ public abstract class ResultHandler {
      * @return The text to be displayed.
      */
     public CharSequence getDisplayContents() {
-        String contents = result.getDisplayResult();
+        String contents = parsedResult.getDisplayResult();
         return contents.replace("\r", "");
     }
 

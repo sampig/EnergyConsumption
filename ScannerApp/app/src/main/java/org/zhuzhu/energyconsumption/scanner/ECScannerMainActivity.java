@@ -1,22 +1,23 @@
 /**
- * Copyright (C) 2016 Chenfeng ZHU
+ * Energy Consumption ( https://github.com/sampig/EnergyConsumption ) - This file is part of Energy Consumption.
+ * Copyright (C) 2016 - Chenfeng ZHU
  */
 package org.zhuzhu.energyconsumption.scanner;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,7 +30,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -41,9 +41,13 @@ import com.google.zxing.client.android.camera.CameraManager;
 import com.google.zxing.client.android.decode.DecodeFormatManager;
 import com.google.zxing.client.android.decode.DecodeHintManager;
 import com.google.zxing.client.android.decode.InactivityTimer;
+import com.google.zxing.client.result.ParsedResultType;
+import com.google.zxing.client.result.ResultParser;
 
+import org.zhuzhu.energyconsumption.scanner.db.SettingsManager;
 import org.zhuzhu.energyconsumption.scanner.model.DataModel;
-import org.zhuzhu.energyconsumption.scanner.result.ResultButtonListener;
+import org.zhuzhu.energyconsumption.scanner.model.DeviceModel;
+import org.zhuzhu.energyconsumption.scanner.model.SettingsModel;
 import org.zhuzhu.energyconsumption.scanner.result.ResultHandler;
 import org.zhuzhu.energyconsumption.scanner.result.ResultHandlerFactory;
 import org.zhuzhu.energyconsumption.scanner.result.ResultModel;
@@ -54,10 +58,8 @@ import org.zhuzhu.energyconsumption.scanner.utils.ScreenManager;
 import org.zhuzhu.energyconsumption.scanner.view.ViewfinderView;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -66,13 +68,18 @@ import java.util.Map;
  *
  * @author Chenfeng ZHU
  */
-public class ScannerActivity extends Activity implements SurfaceHolder.Callback {
+public class ECScannerMainActivity extends Activity implements SurfaceHolder.Callback {
 
-    private static final String TAG = ScannerActivity.class.getSimpleName();
+    private static final String TAG = ECScannerMainActivity.class.getSimpleName();
 
-    private static final int CAMERA_OFFSET = 100;
+    private static final int CAMERA_OFFSET = 10;
     private static final long SCAN_DELAY_MS = 10000L;
     private static final double SCALE_GRAPH = 1.5;
+
+    private static final int SETTING_WINDOW_WIDTH = 600;
+    private static final int SETTING_WINDOW_HEIGHT = 200;
+
+    private Point resolution;
 
     private CameraManager cameraManager;
     private ViewfinderView viewfinderView;
@@ -85,13 +92,16 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
     private String characterSet;
 
     private TextView statusView;
-    private View resultView;
-//    private Result lastResult;
     private List<Result> listResult;
     private List<ResultModel> listResultModel;
     private RelativeLayout resultGraphView;
+    private WebView settingView;
 
+    private SettingsManager settingsManager;
     private HTTPUtils httpUtils;
+
+    private String localURL;
+    private int localQuantity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +114,10 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
         inactivityTimer = new InactivityTimer(this);
         listResult = new ArrayList<>(0);
         listResultModel = new ArrayList<>(0);
-        httpUtils = new HTTPUtils();
+        httpUtils = new HTTPUtils(this);
+        settingsManager = new SettingsManager(this);
+
+        resolution = ScreenManager.getScreenResolution(this.getApplicationContext());
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     }
@@ -112,14 +125,14 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
     @Override
     protected void onResume() {
         super.onResume();
+
+        // init
         cameraManager = new CameraManager(getApplication());
         viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
         viewfinderView.setCameraManager(cameraManager);
-        resultView = findViewById(R.id.result_view);
         statusView = (TextView) findViewById(R.id.status_view);
         resultGraphView = (RelativeLayout) findViewById(R.id.result_graph_view);
         handler = null;
-//        lastResult = null;
         listResult.clear();
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         resetResultView(true);
@@ -165,6 +178,9 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
         } else {
             surfaceHolder.addCallback(this);
         }
+
+        localURL = settingsManager.getWebServer();
+        localQuantity = settingsManager.getQuantity();
     }
 
     @Override
@@ -238,116 +254,163 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
         builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                ScannerActivity.this.finish();
+                ECScannerMainActivity.this.finish();
             }
         });
         builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialogInterface) {
-                ScannerActivity.this.finish();
+                ECScannerMainActivity.this.finish();
             }
         });
         builder.show();
     }
 
     /**
-     * @param rawResult
-     * @param barcode
-     * @param scaleFactor
+     * @param rawResult a list of raw result
+     * @param qrCode    the QR Code bitmap
      */
-    public void handleDecode(Result[] rawResult, Bitmap barcode, float scaleFactor) {
+    public void handleDecode(Result[] rawResult, Bitmap qrCode) {
         inactivityTimer.onActivity();
         if (rawResult.length < 1) {
             resetResultView(true);
             return;
         }
         listResult.clear();
+
+        this.showProcessing(true);
+
         for (Result result : rawResult) {
-//            lastResult = result;
             ResultHandler resultHandler = ResultHandlerFactory.makeResultHandler(this, result);
             if (resultHandler == null) {
                 continue;
             }
-            handleDecodeInternally(result, resultHandler, barcode);
-            if (result!=null) {
+            handleDecodeInternally(result, resultHandler, qrCode);
+            if (result != null) {
                 listResult.add(result);
             }
         }
 
-        if (listResult.size()>0) {
+        if (listResult.size() > 0 || settingView != null) {
             restartPreviewAfterDelay(SCAN_DELAY_MS);
         } else {
             restartPreviewAfterDelay(SCAN_DELAY_MS);
+        }
+
+        this.showProcessing(false);
+    }
+
+    private void showProcessing(boolean flag) {
+        if (flag) {
+            statusView.setText(R.string.msg_scan_process);
+            statusView.setVisibility(View.VISIBLE);
+        } else {
+            statusView.setVisibility(View.GONE);
         }
     }
 
     /**
-     * @param rawResult
-     * @param resultHandler
-     * @param barcode
+     * @param rawResult     the raw result
+     * @param resultHandler the result handler
+     * @param qrCode        the QR Code bitmap
      */
-    private void handleDecodeInternally(Result rawResult, ResultHandler resultHandler, Bitmap barcode) {
+    @SuppressLint("SetJavaScriptEnabled")
+    private void handleDecodeInternally(Result rawResult, ResultHandler resultHandler, Bitmap qrCode) {
+        // check the content in the QR code
+        Log.d(TAG, qrCode.toString());
+        boolean flagError = false;
         CharSequence displayContents = resultHandler.getDisplayContents();
-        statusView.setVisibility(View.GONE);
-        viewfinderView.setVisibility(View.GONE);
-        resultView.setVisibility(View.VISIBLE);
-
-        ImageView barcodeImageView = (ImageView) findViewById(R.id.barcode_image_view);
-        if (barcode == null) {
-            barcodeImageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
-        } else {
-            barcodeImageView.setImageBitmap(barcode);
+        if (displayContents == null) {
+            return;
         }
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        TextView timeTextView = (TextView) findViewById(R.id.time_text_view);
-        timeTextView.setText(formatter.format(new Date(rawResult.getTimestamp())));
-        TextView rawTextView = (TextView) findViewById(R.id.raw_text_view);
-        // TODO: change
-        rawTextView.setText(rawResult.getText());
-        TextView contentsTextView = (TextView) findViewById(R.id.contents_text_view);
-        contentsTextView.setText(displayContents);
-        int scaledSize = Math.max(12, 32 - displayContents.length() / 4);
-        contentsTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledSize);
+        String contents = displayContents.toString();
+        System.out.println("***Activity.Contents: " + contents);
+        String requestURL = null;
+        String deviceID = null;
+        if (ResultParser.parseResult(rawResult).getType() == ParsedResultType.URI
+                || contents.toLowerCase().startsWith("http")) {
+            // if it is a URL
+            requestURL = contents;
+            deviceID = contents;
+        } else if (contents.startsWith("{")) {
+            // if it is a JSON data
+            DeviceModel dm = DeviceModel.getInstance(contents);
+            if (dm.deviceID == null) {
+                flagError = true;
+            } else {
+                deviceID = dm.deviceID;
+                if (dm.direct && dm.webserver != null) {
+                    requestURL = dm.webserver;
+                } else {
+                    if (dm.webserver == null) {
+                        if (localURL.endsWith("/")) {
+                            requestURL = localURL + deviceID + "/" + localQuantity;
+                        } else {
+                            requestURL = localURL + "/" + deviceID + "/" + localQuantity;
+                        }
+                    } else {
+                        requestURL = dm.webserver + dm.deviceID;
+                    }
+                }
+            }
+        } else if (contents.toUpperCase().startsWith("SETTINGS={")) {
+            // if it is configuration
+            this.changeSetting(contents);
+            return;
+        } else if (contents.length() < 32) {
+            // if it is a text, it will be considered as a device ID.
+            String webserver = settingsManager.getWebServer();
+            deviceID = resultHandler.getDisplayContents().toString();
+            if (webserver.endsWith("/")) {
+                requestURL = webserver + deviceID + "/" + localQuantity;
+            } else {
+                requestURL = webserver + "/" + deviceID + "/" + localQuantity;
+            }
+        } else {
+            flagError = true;
+        }
 
-//        WebView webview = (WebView) findViewById(R.id.webView1);
-        String deviceID = resultHandler.getDisplayContents().toString();
+        viewfinderView.setVisibility(View.GONE);
 
+        String responseData = httpUtils.getRequestGET(requestURL);
+        System.out.println("***Activity.RequestURL: " + requestURL);
+        DataModel dm = DataModel.getInstance(responseData);
+
+        // get the position and size of the QR Code
         ResultPoint[] points = rawResult.getResultPoints();
         ResultPoint position = points[1];
         int bitmapWidth = (int) (points[2].getX() - position.getX());
         int bitmapHeight = (int) (points[0].getY() - position.getY());
 
         WebView webview = new WebView(this);
-        webview.setBackgroundColor(getResources().getColor(R.color.transparent));
+        webview.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.transparent));
+        //(getResources().getColor(R.color.transparent));
         WebSettings webSettings = webview.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webview.requestFocusFromTouch();
-        DataModel dm = DataModel.getRandomInstance("D5905EFFBA27634C");
-        Map<String,Double> data = dm.data;
-        String content = null;
-        if (data.size()==0) {
-             content = HTMLGenerator.getHTMLContent(httpUtils.parseJsonData(displayContents.toString()), bitmapWidth, bitmapHeight);
+        String contentHTML;
+        if (flagError) {
+            contentHTML = HTMLGenerator.getErrorPage((int) (bitmapWidth / SCALE_GRAPH), (int) (bitmapHeight / SCALE_GRAPH));
+        } else if (responseData == null || "".equalsIgnoreCase(responseData) || dm == null || dm.data == null || dm.data.size() == 0) {
+            contentHTML = HTMLGenerator.getHTMLContent(null, (int) (bitmapWidth / SCALE_GRAPH), (int) (bitmapHeight / SCALE_GRAPH));
         } else {
-            content = HTMLGenerator.getHTMLContent(data, bitmapWidth, bitmapHeight);
+            contentHTML = HTMLGenerator.getHTMLContent(dm.data, bitmapWidth, bitmapHeight);
         }
         webview.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        webview.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
-//        rawTextView.setText("size: "+findViewById(R.id.result_view_center).getLayoutParams().width+", "+findViewById(R.id.result_view_center).getLayoutParams().height);
-//        rawTextView.setText(points.length+": "+points[0]);
+        webview.loadDataWithBaseURL("file:///android_asset/", contentHTML, "text/html", "utf-8", null);
         RelativeLayout webviewLayout = new RelativeLayout(getApplicationContext());
-        webviewLayout.setBackground(getResources().getDrawable(R.drawable.graph_window));
-        webviewLayout.addView(webview, new RelativeLayout.LayoutParams((int) (bitmapWidth*SCALE_GRAPH), (int) (bitmapHeight*SCALE_GRAPH)));
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int) (bitmapWidth*SCALE_GRAPH), (int) (bitmapHeight*SCALE_GRAPH));
+        webviewLayout.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.settings_result_window));
+        //(getResources().getDrawable(R.drawable.graph_window));
+        webviewLayout.addView(webview, new RelativeLayout.LayoutParams((int) (bitmapWidth * SCALE_GRAPH), (int) (bitmapHeight * SCALE_GRAPH)));
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int) (bitmapWidth * SCALE_GRAPH), (int) (bitmapHeight * SCALE_GRAPH));
         RelativeLayout queueLayout = new RelativeLayout(getApplicationContext());
         params.addRule(RelativeLayout.BELOW, 20);
         params.leftMargin = (int) position.getX();
         params.topMargin = (int) position.getY();
-//        params.width=405;
-//        params.height=230;
         queueLayout.addView(webviewLayout, params);
         resultGraphView.addView(queueLayout);
 
-        final Vibrator vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
+        final Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         webview.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -368,33 +431,64 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
         model.setWebView(webview);
         listResultModel.add(model);
 
-        // generate the button after viewing result
-        int buttonCount = resultHandler.getButtonCount();
-        ViewGroup buttonView = (ViewGroup) findViewById(R.id.result_button_view);
-        buttonView.requestFocus();
-        for (int x = 0; x < ResultHandler.MAX_BUTTON_COUNT; x++) {
-            TextView button = (TextView) buttonView.getChildAt(x);
-            if (x < buttonCount) {
-                button.setVisibility(View.VISIBLE);
-                button.setText(resultHandler.getButtonText(x));
-                button.setOnClickListener(new ResultButtonListener(resultHandler, x));
-            } else {
-                button.setVisibility(View.GONE);
-            }
-        }
+    }
 
-        // Hide all useless information
-        findViewById(R.id.result_view_left).setVisibility(View.GONE);
-        findViewById(R.id.result_view_center).setVisibility(View.GONE);
-        findViewById(R.id.result_view_right).setVisibility(View.GONE);
-//        findViewById(R.id.layout_raw_text).setVisibility(View.GONE);
-        buttonView.setVisibility(View.GONE);
+    /**
+     * Change the settings.
+     *
+     * @param contents the contents in JSON format
+     */
+    private void changeSetting(String contents) {
+        SettingsModel settingsModel = SettingsModel.getInstance(contents.substring(9));
+
+        // update the settings in local database.
+        if (settingsModel.quantity > 0) {
+            settingsManager.updateQuantity(settingsModel.quantity);
+//            System.out.println("***Settings changed: " + settingsManager.getQuantity());
+        }
+        if (settingsModel.webserver != null) {
+            settingsManager.updateWebServer(settingsModel.webserver);
+//            System.out.println("***Settings changed: " + settingsManager.getWebServer());
+        }
+        settingsModel.webserver = settingsManager.getWebServer();
+        settingsModel.quantity = settingsManager.getQuantity();
+//        System.out.println("Settings current: " + settingsManager.getWebServer() + ", " + settingsManager.getQuantity());
+//        statusView.setText("Settings current: " + settingsManager.getWebServer() + ", " + settingsManager.getQuantity());
+//        statusView.setVisibility(View.VISIBLE);
+
+        int width = 600;
+        int height = 200;
+
+        settingView = new WebView(this);
+        settingView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.transparent));
+        settingView.requestFocusFromTouch();
+        String content = HTMLGenerator.getSettingsPage(settingsModel);
+        settingView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        settingView.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
+        RelativeLayout webviewLayout = new RelativeLayout(getApplicationContext());
+        webviewLayout.addView(settingView, new RelativeLayout.LayoutParams(width, height));
+        webviewLayout.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.settings_result_window));
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);
+        RelativeLayout queueLayout = new RelativeLayout(getApplicationContext());
+        params.leftMargin = (resolution.x - width) / 2;
+        params.topMargin = (resolution.y - height) / 2;
+        queueLayout.addView(webviewLayout, params);
+        resultGraphView.addView(queueLayout);
+
+        settingView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                clearWebView(settingView);
+                return true;
+            }
+        });
+
     }
 
     /**
      * Restart scanner.
      *
-     * @param delayMS
+     * @param delayMS the ms for delay
      */
     public void restartPreviewAfterDelay(long delayMS) {
         if (handler != null) {
@@ -411,23 +505,40 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
     public void resetResultView(boolean isBack) {
         if (isBack) {
             // if clicking back button, remove all the result graphs.
-            resultView.setVisibility(View.GONE);
             for (ResultModel result : listResultModel) {
                 WebView webView = result.getWebView();
                 if (webView.getParent() != null) {
                     ViewGroup view = (ViewGroup) webView.getParent();
-                    if (view.getParent() !=null) {
+                    if (view.getParent() != null) {
                         ((ViewGroup) view.getParent()).removeView(view);
-//                        ((ViewGroup) webView.getParent()).removeView(webView);
                     }
                 }
             }
+            // remove
+            if (settingView != null) {
+                clearWebView(settingView);
+            }
         }
-        statusView.setText(R.string.msg_scan_default);
-        statusView.setVisibility(View.VISIBLE);
+        // statusView.setText(R.string.msg_scan_default);
+        // statusView.setVisibility(View.GONE);
         viewfinderView.setVisibility(View.VISIBLE);
-//        lastResult = null;
         listResult.clear();
+    }
+
+    /**
+     * Clear the content in webview.
+     *
+     * @param webView the webview
+     */
+    private void clearWebView(WebView webView) {
+        if (webView.getParent() != null) {
+            ViewGroup view = (ViewGroup) webView.getParent();
+            if (view.getParent() != null) {
+                ((ViewGroup) view.getParent()).removeView(view);
+                webView.destroy();
+            }
+        }
+        statusView.setVisibility(View.GONE);
     }
 
     public void drawViewfinder() {
@@ -438,7 +549,7 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_BACK:
-                if (listResult.size() > 0 || resultView.getVisibility() != View.GONE) {
+                if (listResult.size() > 0) {
                     restartPreviewAfterDelay(0L);
                     return true;
                 }
@@ -463,6 +574,7 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
         return super.onCreateOptionsMenu(menu);
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -470,34 +582,42 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         switch (item.getItemId()) {
             case R.id.menu_settings:
-                intent.setClassName(this, PreferencesActivity.class.getName());
-                startActivity(intent);
+                // intent.setClassName(this, PreferencesActivity.class.getName());
+                // startActivity(intent);
+                settingView = new WebView(this);
+                settingView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.transparent));
+                WebSettings webSettings = settingView.getSettings();
+                webSettings.setJavaScriptEnabled(true);
+                settingView.requestFocusFromTouch();
+                SettingsModel sm = new SettingsModel();
+                sm.webserver = settingsManager.getWebServer();
+                sm.quantity = settingsManager.getQuantity();
+                String content = HTMLGenerator.getSettingsPage(sm);
+                settingView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                settingView.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
+                RelativeLayout webviewLayout = new RelativeLayout(getApplicationContext());
+                webviewLayout.addView(settingView, new RelativeLayout.LayoutParams(SETTING_WINDOW_WIDTH, SETTING_WINDOW_HEIGHT));
+                webviewLayout.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.settings_result_window));
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(SETTING_WINDOW_WIDTH, SETTING_WINDOW_HEIGHT);
+                RelativeLayout queueLayout = new RelativeLayout(getApplicationContext());
+                params.leftMargin = (resolution.x - SETTING_WINDOW_WIDTH) / 2;
+                params.topMargin = (resolution.y - SETTING_WINDOW_HEIGHT) / 2;
+                queueLayout.addView(webviewLayout, params);
+                resultGraphView.addView(queueLayout);
+                settingView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        clearWebView(settingView);
+                        return true;
+                    }
+                });
+                String text = sm.webserver + ", " + sm.quantity;
+                statusView.setText(text);
+                statusView.setVisibility(View.VISIBLE);
                 break;
             case R.id.menu_help:
                 intent.setClassName(this, HelpActivity.class.getName());
                 startActivity(intent);
-                break;
-            case R.id.menu_test:
-                WebView webview = new WebView(this);
-                webview.setBackgroundColor(getResources().getColor(R.color.transparent));
-//                webview.setBackgroundColor(getResources().getColor(R.color.result_graph_background));
-//                webview.setBackground(getResources().getDrawable(R.drawable.custom));
-                WebSettings webSettings = webview.getSettings();
-                webSettings.setJavaScriptEnabled(true);
-                webview.requestFocusFromTouch();
-                String content = HTMLGenerator.getHTMLContent(null);
-                webview.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                webview.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
-                RelativeLayout webviewLayout = new RelativeLayout(getApplicationContext());
-                webviewLayout.addView(webview, new RelativeLayout.LayoutParams(405, 230));
-                webviewLayout.setBackground(getResources().getDrawable(R.drawable.graph_window));
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(405, 230);
-                RelativeLayout queueLayout = new RelativeLayout(getApplicationContext());
-//                params.addRule(RelativeLayout.BELOW, 20);
-                params.leftMargin = 100;
-                params.topMargin = 100;
-                queueLayout.addView(webviewLayout, params);
-                resultGraphView.addView(queueLayout);
                 break;
             default:
                 return super.onOptionsItemSelected(item);

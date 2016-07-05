@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.zhuzhu.energyconsumption.scanner.result;
 
 import android.view.View;
@@ -26,6 +25,7 @@ import android.view.View;
  * @author Chenfeng Zhu
  */
 public final class ResultButtonListener implements View.OnClickListener {
+    //TODO: useless for now.
 
     private final ResultHandler resultHandler;
     private final int index;

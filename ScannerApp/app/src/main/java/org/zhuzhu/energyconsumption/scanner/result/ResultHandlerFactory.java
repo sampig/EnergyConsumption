@@ -18,10 +18,9 @@ package org.zhuzhu.energyconsumption.scanner.result;
 
 import com.google.zxing.Result;
 import com.google.zxing.client.result.ParsedResult;
-import com.google.zxing.client.result.ParsedResultType;
 import com.google.zxing.client.result.ResultParser;
 
-import org.zhuzhu.energyconsumption.scanner.ScannerActivity;
+import org.zhuzhu.energyconsumption.scanner.ECScannerMainActivity;
 
 /**
  * Manufactures Android-specific handlers based on the barcode content's type.
@@ -34,11 +33,15 @@ public final class ResultHandlerFactory {
     private ResultHandlerFactory() {
     }
 
-    public static ResultHandler makeResultHandler(ScannerActivity activity, Result rawResult) {
+    public static ResultHandler makeResultHandler(ECScannerMainActivity activity, Result rawResult) {
         ParsedResult result = parseResult(rawResult);
-        if (result.getType() != ParsedResultType.TEXT) {
-            // if the QR Code is not the text
-            return null;
+        // only deal with text and URL:
+        switch (result.getType()) {
+            case TEXT:
+            case URI:
+                break;
+            default:
+                return null;
         }
         return new ScanningResultHandler(activity, result, rawResult);
     }

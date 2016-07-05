@@ -1,5 +1,6 @@
-/*
- * Copyright (C) 2016 Chenfeng Zhu
+/**
+ * Energy Consumption ( https://github.com/sampig/EnergyConsumption ) - This file is part of Energy Consumption.
+ * Copyright (C) 2016 - Chenfeng ZHU
  */
 package org.zhuzhu.energyconsumption.scanner.db;
 
@@ -13,15 +14,17 @@ import android.database.sqlite.SQLiteOpenHelper;
  *
  * @author Chenfeng Zhu
  */
+@Deprecated
 public class HistoryDBHelper extends SQLiteOpenHelper {
+    //TODO: useless for now.
 
     private static final int DB_VERSION = 1;
     private static final String DB_NAME = "ec_scanner.db";
 
+    /**
+     * Table name
+     */
     static final String TABLE_NAME = "ec_history";
-
-    private String create_sql = "CREATE TABLE " + TABLE_NAME + "("
-            +");";
 
     public HistoryDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
@@ -37,6 +40,8 @@ public class HistoryDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
+        String create_sql = "CREATE TABLE " + TABLE_NAME + "("
+                +");";
         sqLiteDatabase.execSQL(create_sql);
     }
 

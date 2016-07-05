@@ -33,7 +33,7 @@ import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.multi.qrcode.QRCodeMultiReader;
 
 import org.zhuzhu.energyconsumption.scanner.R;
-import org.zhuzhu.energyconsumption.scanner.ScannerActivity;
+import org.zhuzhu.energyconsumption.scanner.ECScannerMainActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
@@ -42,13 +42,13 @@ final class DecodeHandler extends Handler {
 
     private static final String TAG = DecodeHandler.class.getSimpleName();
 
-    private final ScannerActivity activity;
+    private final ECScannerMainActivity activity;
     //  private final MultiFormatReader multiFormatReader;
     private final QRCodeMultiReader multiFormatReader;
     private Map<DecodeHintType, Object> hints;
     private boolean running = true;
 
-    DecodeHandler(ScannerActivity activity, Map<DecodeHintType, Object> hints) {
+    DecodeHandler(ECScannerMainActivity activity, Map<DecodeHintType, Object> hints) {
         multiFormatReader = new QRCodeMultiReader();
         this.hints = hints;
 //    multiFormatReader.setHints(hints);

@@ -10,11 +10,13 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 
 /**
- * @author Chenfeng ZHU
+ * @author Chenfeng Zhu
  */
+@Deprecated
 public class PreferencesFragment
         extends PreferenceFragment
         implements SharedPreferences.OnSharedPreferenceChangeListener {
+    //TODO: useless for now.
 
     private CheckBoxPreference[] checkBoxPrefs;
 
