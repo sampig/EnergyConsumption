@@ -89,6 +89,9 @@ public class ECRESTService {
 
         DataModel dataModel = null;
         dataModel = cm.queryDataModel(deviceID, strDate, strTime);
+        if (dataModel == null) {
+            return "{}";
+        }
         if (dataModel.data == null || dataModel.data.size()==0) {
             return dataModel.toString();
         }
