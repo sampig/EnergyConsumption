@@ -150,4 +150,11 @@ public class ECRESTService {
         return dataModel;
     }
 
+    @GET
+    @Path("help")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String displayHelp() {
+        return "{baseURL}/{deviceID}/{quantity}";
+    }
+
 }
