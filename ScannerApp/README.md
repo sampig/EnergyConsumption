@@ -9,7 +9,9 @@ Table of contents
 -----------------
 
   * [Schedule](#schedule)
-  * [Design](design)
+  * [Design](#design)
+  * [Manual](#manual)
+  * [References](#references)
 
 ## Schedule
 
@@ -31,7 +33,7 @@ Table of contents
 ## Design
 
 
-## Implementation
+## Manual
 
 
 ## References

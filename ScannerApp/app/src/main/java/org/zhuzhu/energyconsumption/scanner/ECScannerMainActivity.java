@@ -586,8 +586,6 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         switch (item.getItemId()) {
             case R.id.menu_settings:
-                // intent.setClassName(this, PreferencesActivity.class.getName());
-                // startActivity(intent);
                 settingView = new WebView(this);
                 settingView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.transparent));
                 WebSettings webSettings = settingView.getSettings();
