@@ -24,6 +24,7 @@ import android.view.View;
  * @author dswitkin@google.com (Daniel Switkin)
  * @author Chenfeng Zhu
  */
+@Deprecated
 public final class ResultButtonListener implements View.OnClickListener {
     //TODO: useless for now.
 
@@ -37,6 +38,6 @@ public final class ResultButtonListener implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        resultHandler.handleButtonPress(index);
+//        resultHandler.handleButtonPress(index);
     }
 }

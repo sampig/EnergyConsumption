@@ -27,18 +27,18 @@ public final class ScanningResultHandler extends ResultHandler {
         super(activity, result, rawResult);
     }
 
-    @Override
-    public int getButtonCount() {
-        return buttons.length;
-    }
+//    @Override
+//    public int getButtonCount() {
+//        return buttons.length;
+//    }
 
-    @Override
-    public int getButtonText(int index) {
-        return buttons[index];
-    }
+//    @Override
+//    public int getButtonText(int index) {
+//        return buttons[index];
+//    }
 
-    @Override
-    public void handleButtonPress(int index) {
+//    @Override
+//    public void handleButtonPress(int index) {
 //        String text = super.getParsedResult().getDisplayResult();
 //        switch (index) {
 //            case 0:
@@ -51,7 +51,7 @@ public final class ScanningResultHandler extends ResultHandler {
 //                super.getActivity().onKeyDown(KeyEvent.KEYCODE_BACK, null);
 //                break;
 //        }
-    }
+//    }
 
     /**
      * Lauch an activity to view the detail information of device.

@@ -33,6 +33,13 @@ public final class ResultHandlerFactory {
     private ResultHandlerFactory() {
     }
 
+    /**
+     * Get the result handler according to the type of the result.
+     *
+     * @param activity  the activity
+     * @param rawResult the raw result
+     * @return the corresponded handler.
+     */
     public static ResultHandler makeResultHandler(ECScannerMainActivity activity, Result rawResult) {
         ParsedResult result = parseResult(rawResult);
         // only deal with text and URL:
@@ -46,6 +53,12 @@ public final class ResultHandlerFactory {
         return new ScanningResultHandler(activity, result, rawResult);
     }
 
+    /**
+     * Get the parsed result.
+     *
+     * @param rawResult the raw result
+     * @return the parsed result
+     */
     private static ParsedResult parseResult(Result rawResult) {
         return ResultParser.parseResult(rawResult);
     }

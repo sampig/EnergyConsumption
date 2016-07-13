@@ -326,49 +326,53 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         String contents = displayContents.toString();
         System.out.println("***Activity.Contents: " + contents);
         String requestURL = null;
-        String deviceID = null;
-        if (ResultParser.parseResult(rawResult).getType() == ParsedResultType.URI
-                || contents.toLowerCase().startsWith("http")) {
-            // if it is a URL
-            requestURL = contents;
-            deviceID = contents;
-        } else if (contents.startsWith("{")) {
-            // if it is a JSON data
-            DeviceModel dm = DeviceModel.getInstance(contents);
-            if (dm.deviceID == null) {
-                flagError = true;
-            } else {
-                deviceID = dm.deviceID;
-                if (dm.direct && dm.webserver != null) {
-                    requestURL = dm.webserver;
+            String deviceID = null;
+            if (ResultParser.parseResult(rawResult).getType() == ParsedResultType.URI
+                    || contents.toLowerCase().startsWith("http")) {
+                // if it is a URL
+                requestURL = contents;
+                deviceID = contents;
+            } else if (contents.startsWith("{")) {
+                // if it is a JSON data
+                DeviceModel dm = DeviceModel.getInstance(contents);
+                if (dm.deviceID == null) {
+                    flagError = true;
                 } else {
-                    if (dm.webserver == null) {
-                        if (localURL.endsWith("/")) {
-                            requestURL = localURL + deviceID + "/" + localQuantity;
-                        } else {
-                            requestURL = localURL + "/" + deviceID + "/" + localQuantity;
-                        }
+                    deviceID = dm.deviceID;
+                    if (dm.direct && dm.webserver != null) {
+                        requestURL = dm.webserver;
                     } else {
-                        requestURL = dm.webserver + dm.deviceID;
+                        String tmpURL = dm.webserver;
+                        int tmpQuantity = dm.quantity;
+                        if (dm.webserver == null) {
+                            if (localURL.endsWith("/")) {
+                                tmpURL = localURL;
+                            } else {
+                                tmpURL = localURL + "/";
+                            }
+                        }
+                        if (dm.quantity == 0) {
+                            tmpQuantity = localQuantity;
+                        }
+                        requestURL = tmpURL + dm.deviceID + "/" + tmpQuantity;
                     }
                 }
-            }
-        } else if (contents.toUpperCase().startsWith("SETTINGS={")) {
-            // if it is configuration
-            this.changeSetting(contents);
-            return;
-        } else if (contents.length() < 32) {
-            // if it is a text, it will be considered as a device ID.
-            String webserver = settingsManager.getWebServer();
-            deviceID = resultHandler.getDisplayContents().toString();
-            if (webserver.endsWith("/")) {
-                requestURL = webserver + deviceID + "/" + localQuantity;
+            } else if (contents.toUpperCase().startsWith("SETTINGS={")) {
+                // if it is configuration
+                this.changeSetting(contents);
+                return;
+            } else if (contents.length() < 32) {
+                // if it is a text, it will be considered as a device ID.
+                String webserver = settingsManager.getWebServer();
+                deviceID = resultHandler.getDisplayContents().toString();
+                if (webserver.endsWith("/")) {
+                    requestURL = webserver + deviceID + "/" + localQuantity;
+                } else {
+                    requestURL = webserver + "/" + deviceID + "/" + localQuantity;
+                }
             } else {
-                requestURL = webserver + "/" + deviceID + "/" + localQuantity;
+                flagError = true;
             }
-        } else {
-            flagError = true;
-        }
 
         viewfinderView.setVisibility(View.GONE);
 
