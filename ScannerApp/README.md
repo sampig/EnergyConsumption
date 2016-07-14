@@ -79,7 +79,7 @@ URL:
 
 #### Data in Response
 
-``` json
+``` javascript
 {
     'DeviceID':'device_id',
     'Data':[
@@ -91,18 +91,26 @@ URL:
 
 ## Manual
 
-Get the source of APP:
+### APP
+
+Get the source of APP from Git:
 
 ``` sh
 git clone -b scanner-app git@github.com:sampig/EnergyConsumption.git [LOCAL_DIRECTORY]
 ```
 
 Open Android Studio.
-Open an existing Android Studio project
-    <LOCAL_DIRECTORY>/ScannerApp
-Auto config the gradle.
+
+![](resources/images/01_OpenAndroidStudio.png?raw=true)
+
+Open an existing Android Studio project _<LOCAL_DIRECTORY>/ScannerApp_. And choose auto-config of gradle.
+
+![](resources/images/02_OpenAppProject.png?raw=true)
 
 If you have installed adb tools and connect your mobile, run 'app' immediately and choose a connected device.
+
+![](resources/images/02_OpenAppProject.png?raw=true)
+
 Or you could choose build --> build APK. Then an APK file would be generated in _[LOCAL_DIRECTORY]/ScannerApp/app/build/outputs_. Copy the APK file to your mobile and install it.
 
 1. Download the apk file.
