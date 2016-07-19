@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
+ * This is used to provide some methods to get/update the values in settings table.
  * @author Chenfeng Zhu
  */
 public class SettingsManager {
@@ -21,11 +22,12 @@ public class SettingsManager {
     private SQLiteOpenHelper dbHelper = null;
     private SQLiteDatabase db = null;
 
+    // all the columns in table
     private static final String[] COLUMNS = {SettingsDBHelper.KEY_COL, SettingsDBHelper.VALUE_COL};
 
     public SettingsManager(Activity activity) {
         this.activity = activity;
-        dbHelper = new SettingsDBHelper(activity);
+        dbHelper = new SettingsDBHelper(this.activity);
         try {
             db = dbHelper.getWritableDatabase();
         } catch (SQLiteException e) {
@@ -63,14 +65,14 @@ public class SettingsManager {
         Cursor cursor = null;
         try {
             cursor = db.query(SettingsDBHelper.TABLE_NAME, COLUMNS, SettingsDBHelper.KEY_COL + "=?", new String[]{SettingsDBHelper.WEBSERVER_KEY}, null, null, null);
-            if (cursor.moveToFirst()) {
+            if (cursor.moveToFirst()) { // if the webserver exists in the table, update it.
                 ContentValues values = new ContentValues();
                 values.put(SettingsDBHelper.VALUE_COL, webserver);
                 int flag = db.update(SettingsDBHelper.TABLE_NAME, values, SettingsDBHelper.KEY_COL + "=?", new String[]{SettingsDBHelper.WEBSERVER_KEY});
                 if (flag > 0) {
                     return true;
                 }
-            } else {
+            } else { // otherwise, insert a new one.
                 ContentValues values = new ContentValues();
                 values.put(SettingsDBHelper.KEY_COL, SettingsDBHelper.WEBSERVER_KEY);
                 values.put(SettingsDBHelper.VALUE_COL, webserver);
@@ -117,14 +119,14 @@ public class SettingsManager {
         Cursor cursor = null;
         try {
             cursor = db.query(SettingsDBHelper.TABLE_NAME, COLUMNS, SettingsDBHelper.KEY_COL + "=?", new String[]{SettingsDBHelper.QUANTITY_KEY}, null, null, null);
-            if (cursor.moveToFirst()) {
+            if (cursor.moveToFirst()) { // if the quantity exists in the table, update it.
                 ContentValues values = new ContentValues();
                 values.put(SettingsDBHelper.VALUE_COL, quantity);
                 int flag = db.update(SettingsDBHelper.TABLE_NAME, values, SettingsDBHelper.KEY_COL + "=?", new String[]{SettingsDBHelper.QUANTITY_KEY});
                 if (flag > 0) {
                     return true;
                 }
-            } else {
+            } else { // otherwise, insert a new one.
                 ContentValues values = new ContentValues();
                 values.put(SettingsDBHelper.KEY_COL, SettingsDBHelper.QUANTITY_KEY);
                 values.put(SettingsDBHelper.VALUE_COL, quantity);

@@ -10,6 +10,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -140,6 +142,8 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         Intent intent = getIntent();
         decodeFormats = null;
         characterSet = null;
+
+        setRequestedOrientation(this.getCurrentOrientation());
 
         Point point = ScreenManager.getScreenResolution(this.getApplicationContext());
         cameraManager.setManualFramingRect(point.x - CAMERA_OFFSET, point.y - CAMERA_OFFSET);
@@ -326,49 +330,53 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         String contents = displayContents.toString();
         System.out.println("***Activity.Contents: " + contents);
         String requestURL = null;
-        String deviceID = null;
-        if (ResultParser.parseResult(rawResult).getType() == ParsedResultType.URI
-                || contents.toLowerCase().startsWith("http")) {
-            // if it is a URL
-            requestURL = contents;
-            deviceID = contents;
-        } else if (contents.startsWith("{")) {
-            // if it is a JSON data
-            DeviceModel dm = DeviceModel.getInstance(contents);
-            if (dm.deviceID == null) {
-                flagError = true;
-            } else {
-                deviceID = dm.deviceID;
-                if (dm.direct && dm.webserver != null) {
-                    requestURL = dm.webserver;
+            String deviceID = null;
+            if (ResultParser.parseResult(rawResult).getType() == ParsedResultType.URI
+                    || contents.toLowerCase().startsWith("http")) {
+                // if it is a URL
+                requestURL = contents;
+                deviceID = contents;
+            } else if (contents.startsWith("{")) {
+                // if it is a JSON data
+                DeviceModel dm = DeviceModel.getInstance(contents);
+                if (dm.deviceID == null) {
+                    flagError = true;
                 } else {
-                    if (dm.webserver == null) {
-                        if (localURL.endsWith("/")) {
-                            requestURL = localURL + deviceID + "/" + localQuantity;
-                        } else {
-                            requestURL = localURL + "/" + deviceID + "/" + localQuantity;
-                        }
+                    deviceID = dm.deviceID;
+                    if (dm.direct && dm.webserver != null) {
+                        requestURL = dm.webserver;
                     } else {
-                        requestURL = dm.webserver + dm.deviceID;
+                        String tmpURL = dm.webserver;
+                        int tmpQuantity = dm.quantity;
+                        if (dm.webserver == null) {
+                            if (localURL.endsWith("/")) {
+                                tmpURL = localURL;
+                            } else {
+                                tmpURL = localURL + "/";
+                            }
+                        }
+                        if (dm.quantity == 0) {
+                            tmpQuantity = localQuantity;
+                        }
+                        requestURL = tmpURL + dm.deviceID + "/" + tmpQuantity;
                     }
                 }
-            }
-        } else if (contents.toUpperCase().startsWith("SETTINGS={")) {
-            // if it is configuration
-            this.changeSetting(contents);
-            return;
-        } else if (contents.length() < 32) {
-            // if it is a text, it will be considered as a device ID.
-            String webserver = settingsManager.getWebServer();
-            deviceID = resultHandler.getDisplayContents().toString();
-            if (webserver.endsWith("/")) {
-                requestURL = webserver + deviceID + "/" + localQuantity;
+            } else if (contents.toUpperCase().startsWith("SETTINGS={")) {
+                // if it is configuration
+                this.changeSetting(contents);
+                return;
+            } else if (contents.length() < 32) {
+                // if it is a text, it will be considered as a device ID.
+                String webserver = settingsManager.getWebServer();
+                deviceID = resultHandler.getDisplayContents().toString();
+                if (webserver.endsWith("/")) {
+                    requestURL = webserver + deviceID + "/" + localQuantity;
+                } else {
+                    requestURL = webserver + "/" + deviceID + "/" + localQuantity;
+                }
             } else {
-                requestURL = webserver + "/" + deviceID + "/" + localQuantity;
+                flagError = true;
             }
-        } else {
-            flagError = true;
-        }
 
         viewfinderView.setVisibility(View.GONE);
 
@@ -545,6 +553,27 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         viewfinderView.drawViewfinder();
     }
 
+    private int getCurrentOrientation() {
+        int rotation = getWindowManager().getDefaultDisplay().getRotation();
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            switch (rotation) {
+                case Surface.ROTATION_0:
+                case Surface.ROTATION_90:
+                    return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                default:
+                    return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+            }
+        } else {
+            switch (rotation) {
+                case Surface.ROTATION_0:
+                case Surface.ROTATION_270:
+                    return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                default:
+                    return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+            }
+        }
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
@@ -582,8 +611,6 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         switch (item.getItemId()) {
             case R.id.menu_settings:
-                // intent.setClassName(this, PreferencesActivity.class.getName());
-                // startActivity(intent);
                 settingView = new WebView(this);
                 settingView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.transparent));
                 WebSettings webSettings = settingView.getSettings();

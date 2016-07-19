@@ -28,6 +28,10 @@ public class DeviceModel {
      * <b>FALSE</b> request with the id.
      */
     public boolean direct = true;
+    /**
+     * The quantity of data in one hour.
+     */
+    public int quantity = 0;
 
     /**
      * Get a DeviceModel instance according to the json data.
