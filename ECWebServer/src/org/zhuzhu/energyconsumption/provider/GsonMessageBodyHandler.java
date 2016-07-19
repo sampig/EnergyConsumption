@@ -34,8 +34,8 @@ public class GsonMessageBodyHandler implements MessageBodyWriter<Object>, Messag
         if (gson == null) {
             final GsonBuilder gsonBuilder = new GsonBuilder();
             gson = gsonBuilder.disableHtmlEscaping()
-                    // .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
-                    // .setPrettyPrinting()
+                    // .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE) // upcase the first char.
+                    // .setPrettyPrinting() // beautify the format.
                     .serializeNulls().create();
         }
         return gson;

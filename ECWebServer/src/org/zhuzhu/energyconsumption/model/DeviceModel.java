@@ -47,7 +47,7 @@ public class DeviceModel {
     public static DeviceModel generateDevice() {
         DeviceModel dm = new DeviceModel();
         dm.deviceID = CommonUtils.getRandomHex(16);
-        dm.webserver = CommonUtils.DEFAULT_URL;
+        dm.webserver = CommonUtils.DEFAULT_URL_FORMAT;
         return dm;
     }
 

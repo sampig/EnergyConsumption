@@ -17,6 +17,7 @@ import javax.ws.rs.core.UriInfo;
 import org.zhuzhu.energyconsumption.db.ConsumptionManager;
 import org.zhuzhu.energyconsumption.model.DataModel;
 import org.zhuzhu.energyconsumption.model.DeviceModel;
+import org.zhuzhu.energyconsumption.utils.CommonUtils;
 
 /**
  * This class provides the RESTful web service.
@@ -32,6 +33,13 @@ public class ECRESTService {
     @Context
     Request request;
 
+    /**
+     * List devices.
+     *
+     * @param limit
+     *            number of devices (optional)
+     * @return
+     */
     @GET
     @Path("allDevices{limit:(/limit/[^/]+?)?}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -55,6 +63,13 @@ public class ECRESTService {
         return list;
     }
 
+    /**
+     * Get the data of energy consumption according to the device ID.
+     *
+     * @param deviceID
+     *            the device ID
+     * @return
+     */
     @GET
     @Path("deviceID/{did}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -62,10 +77,20 @@ public class ECRESTService {
         return getData(deviceID, null);
     }
 
+    /**
+     * Get the data of energy consumption in certain quantity according to the deivce ID.
+     *
+     * @param deviceID
+     *            the device ID
+     * @param quantity
+     *            the quantity of data
+     * @return
+     */
     @GET
     @Path("deviceID/{did}/{quantity}")
     @Produces(MediaType.TEXT_PLAIN)
     public String getData(@PathParam("did") String deviceID, @PathParam("quantity") String quantity) {
+        // TODO: improved the datetime should be modified.
         System.out.println("Request getData start: " + new Date());
         ConsumptionManager cm = new ConsumptionManager();
         int num = -1;
@@ -92,7 +117,7 @@ public class ECRESTService {
         if (dataModel == null) {
             return "{}";
         }
-        if (dataModel.data == null || dataModel.data.size()==0) {
+        if (dataModel.data == null || dataModel.data.size() == 0) {
             return dataModel.toString();
         }
 
@@ -112,6 +137,23 @@ public class ECRESTService {
         return dataModel.toString();
     }
 
+    /**
+     * Display the URL format.
+     *
+     * @return
+     */
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String displayConfigure() {
+        return CommonUtils.DEFAULT_URL_FORMAT;
+    }
+
+    /**
+     * For testing.
+     *
+     * @param deviceID
+     * @return
+     */
     @GET
     @Path("json/deviceID/{did}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -130,7 +172,7 @@ public class ECRESTService {
 
         DataModel dataModel = null;
         dataModel = cm.queryDataModel(deviceID, strDate, strTime);
-        if (dataModel.data == null || dataModel.data.size()==0) {
+        if (dataModel.data == null || dataModel.data.size() == 0) {
             return dataModel;
         }
 
@@ -150,11 +192,16 @@ public class ECRESTService {
         return dataModel;
     }
 
+    /**
+     * For testing.
+     *
+     * @return
+     */
     @GET
     @Path("help")
     @Produces(MediaType.TEXT_PLAIN)
     public String displayHelp() {
-        return "{baseURL}/{deviceID}/{quantity}";
+        return CommonUtils.DEFAULT_URL_FORMAT;
     }
 
 }

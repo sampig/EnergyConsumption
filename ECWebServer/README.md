@@ -8,8 +8,11 @@ This application is a part of project Energy Consumption.
 The web server is used for:
 
 1. providing web service.
+2. providing format of URL.
 
 ## Usage
+
+### Request Data
 
 Request URL:
 
@@ -28,30 +31,27 @@ Response Data:
 }
 ```
 
+### Request all devices
+
+Request URL:
+
+```
+[baseURL]/ecws/allDevices/{number}
+```
+
+### URL Format
+
+Request URL:
+
+```
+[baseURL]/ecws/
+```
+
 ## Design & Implementation
 
-### Structure: REST
+### REST
 
-REST (Representational State Transfer):
-
-- Usage of HTTP as message interface
-   - GET, POST, PUT, DELETE
-- Message format is not specified
-- Common are HTML, XML, JSON
-- Messages are self-contained
-- Client and server do NOT share a session
-
-#### JSON Libraries
-
-Multiple libraries are available: JSON.simple, GSON, Jackson, JSONP, Org.JSON, etc.
-
-[Gson](https://github.com/google/gson) is a Java library capable of converting Java objects into their JSON representation and JSON strings to an equivalent Java object without the need for placing Java annotations in your classes. The best things about Gson are:
-
-- Provides simple toJson() and fromJson methods to convert Java objects to JSON and vice-versa
-- Alow pre-existing unmodifiable objects to be converted to and from JSON
-- It has extensive support of Java Generics
-- Allow custom representation for objects
-- Support for arbitrarily complex objects
+Jersey + Gson
 
 ### Database: Cassandra
 

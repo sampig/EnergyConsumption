@@ -17,7 +17,7 @@ public abstract class CommonUtils {
     /**
      * Default URL
      */
-    public final static String DEFAULT_URL = "http://ecserver-sampig.rhcloud.com/ECWebServer/ecws/";
+    public final static String DEFAULT_URL_FORMAT = "{requestURL}/{deviceID}/{quantity}";
 
     /**
      * The number of data in 1 second.
