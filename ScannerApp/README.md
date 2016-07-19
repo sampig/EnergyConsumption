@@ -3,7 +3,7 @@ Energy Consumption Scanner App
 
 Author: [ZHU, Chenfeng](http://about.me/zhuchenfeng)
 
-This is the App of Energy Consumption.
+This is the App of Energy Consumption Scanner. This App will display the diagram of appliances' energy consumption via scanning QR code.
 
 Table of contents
 -----------------
@@ -49,6 +49,8 @@ The APP should work as below:
 4. Overlay the image with the graph where the QR code is.
 5. Configure the settings via scanning QR codes.
 
+
+
 ### Data Format
 
 #### Data content in QR Code
@@ -91,39 +93,46 @@ URL:
 
 ## Manual
 
-### APP
-
-Get the source of APP from Git:
+Get the source of the whole project from Git:
 
 ``` sh
-git clone -b scanner-app git@github.com:sampig/EnergyConsumption.git [LOCAL_DIRECTORY]
+git clone git@github.com:sampig/EnergyConsumption.git [LOCAL_DIRECTORY]
+```
+
+### APP
+
+#### Deploy and Install
+
+Switch to the branch of APP:
+
+``` sh
+git checkout scanner-app
 ```
 
 Open Android Studio.
 
 ![](resources/images/01_OpenAndroidStudio.png?raw=true)
 
-Open an existing Android Studio project _<LOCAL_DIRECTORY>/ScannerApp_. And choose auto-config of gradle.
+Open an existing Android Studio project _[LOCAL_DIRECTORY]/ScannerApp_. And choose auto-config of gradle.
 
 ![](resources/images/02_OpenAppProject.png?raw=true)
 
 If you have installed adb tools and connect your mobile, run 'app' immediately and choose a connected device.
 
-![](resources/images/02_OpenAppProject.png?raw=true)
+![](resources/images/03_DeployToTarget.png?raw=true)
 
 Or you could choose build --> build APK. Then an APK file would be generated in _[LOCAL_DIRECTORY]/ScannerApp/app/build/outputs_. Copy the APK file to your mobile and install it.
 
 1. Download the apk file.
 2. Install it in the smart phone whose Android version is 4.0 or above.
-3. Default Configuration is : _http://ecserver-sampig.rhcloud.com/ECWebServer/ecws/deviceID/_ and _60_. If you want to change it, print
-
-Scanner APP Source: https://github.com/sampig/EnergyConsumption/tree/master/ScannerApp
-Web Server Source: https://github.com/sampig/EnergyConsumption/tree/master/ECWebServer
+3. Default Configuration is : _http://ecserver-sampig.rhcloud.com/ECWebServer/ecws/deviceID/_ and _60_. If you want to change it, print a QR code containing the settings information and use App to scan it.
 
 ### Server
 
+Switch to the branch of web server:
+
 ``` sh
-git clone -b ecwebserver git@github.com:sampig/EnergyConsumption.git <LOCAL_DIRECTORY>
+git checkout ecwebserver
 ```
 
 
@@ -135,4 +144,7 @@ git clone -b ecwebserver git@github.com:sampig/EnergyConsumption.git <LOCAL_DIRE
 - [Gson](https://github.com/google/gson)
 - [Jersey](https://jersey.java.net/)
 - [Apache HttpComponents](https://hc.apache.org/)
+- [Scanner APP Source](https://github.com/sampig/EnergyConsumption/tree/scanner-app/ScannerApp)
+- [Web Server Source](https://github.com/sampig/EnergyConsumption/tree/ecwebserver/ECWebServer)
+- [Test Server](http://ecserver-sampig.rhcloud.com/ECWebServer)
 
