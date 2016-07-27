@@ -10,9 +10,9 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -76,7 +76,7 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
 
     private static final int CAMERA_OFFSET = 10;
     private static final long SCAN_DELAY_MS = 10000L;
-    private static final double SCALE_GRAPH = 1.5;
+    private double scaleGraph = 1.5;
 
     private static final int SETTING_WINDOW_WIDTH = 600;
     private static final int SETTING_WINDOW_HEIGHT = 200;
@@ -136,14 +136,19 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         resultGraphView = (RelativeLayout) findViewById(R.id.result_graph_view);
         handler = null;
         listResult.clear();
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+
         resetResultView(true);
         inactivityTimer.onResume();
         Intent intent = getIntent();
         decodeFormats = null;
         characterSet = null;
 
-        setRequestedOrientation(this.getCurrentOrientation());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            //noinspection WrongConstant
+            setRequestedOrientation(getCurrentOrientation());
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
 
         Point point = ScreenManager.getScreenResolution(this.getApplicationContext());
         cameraManager.setManualFramingRect(point.x - CAMERA_OFFSET, point.y - CAMERA_OFFSET);
@@ -390,6 +395,11 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         int bitmapWidth = (int) (points[2].getX() - position.getX());
         int bitmapHeight = (int) (points[0].getY() - position.getY());
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            scaleGraph = 0.7;;
+        } else {
+            scaleGraph = 1.5;
+        }
         WebView webview = new WebView(this);
         webview.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.transparent));
         //(getResources().getColor(R.color.transparent));
@@ -398,9 +408,9 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         webview.requestFocusFromTouch();
         String contentHTML;
         if (flagError) {
-            contentHTML = HTMLGenerator.getErrorPage((int) (bitmapWidth / SCALE_GRAPH), (int) (bitmapHeight / SCALE_GRAPH));
+            contentHTML = HTMLGenerator.getErrorPage((int) (bitmapWidth / scaleGraph), (int) (bitmapHeight / scaleGraph));
         } else if (responseData == null || "".equalsIgnoreCase(responseData) || dm == null || dm.data == null || dm.data.size() == 0) {
-            contentHTML = HTMLGenerator.getHTMLContent(null, (int) (bitmapWidth / SCALE_GRAPH), (int) (bitmapHeight / SCALE_GRAPH));
+            contentHTML = HTMLGenerator.getHTMLContent(null, (int) (bitmapWidth / scaleGraph), (int) (bitmapHeight / scaleGraph));
         } else {
             contentHTML = HTMLGenerator.getHTMLContent(dm.data, bitmapWidth, bitmapHeight);
         }
@@ -409,8 +419,8 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         RelativeLayout webviewLayout = new RelativeLayout(getApplicationContext());
         webviewLayout.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.settings_result_window));
         //(getResources().getDrawable(R.drawable.graph_window));
-        webviewLayout.addView(webview, new RelativeLayout.LayoutParams((int) (bitmapWidth * SCALE_GRAPH), (int) (bitmapHeight * SCALE_GRAPH)));
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int) (bitmapWidth * SCALE_GRAPH), (int) (bitmapHeight * SCALE_GRAPH));
+        webviewLayout.addView(webview, new RelativeLayout.LayoutParams((int) (bitmapWidth * scaleGraph), (int) (bitmapHeight * scaleGraph)));
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int) (bitmapWidth * scaleGraph), (int) (bitmapHeight * scaleGraph));
         RelativeLayout queueLayout = new RelativeLayout(getApplicationContext());
         params.addRule(RelativeLayout.BELOW, 20);
         params.leftMargin = (int) position.getX();
@@ -555,23 +565,30 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
 
     private int getCurrentOrientation() {
         int rotation = getWindowManager().getDefaultDisplay().getRotation();
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            switch (rotation) {
-                case Surface.ROTATION_0:
-                case Surface.ROTATION_90:
-                    return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-                default:
-                    return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-            }
-        } else {
-            switch (rotation) {
-                case Surface.ROTATION_0:
-                case Surface.ROTATION_270:
-                    return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                default:
-                    return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-            }
+        switch (rotation) {
+            case Surface.ROTATION_0:
+            case Surface.ROTATION_90:
+                return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            default:
+                return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
         }
+//        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            switch (rotation) {
+//                case Surface.ROTATION_0:
+//                case Surface.ROTATION_90:
+//                    return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+//                default:
+//                    return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+//            }
+//        } else {
+//            switch (rotation) {
+//                case Surface.ROTATION_0:
+//                case Surface.ROTATION_270:
+//                    return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+//                default:
+//                    return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+//            }
+//        }
     }
 
     @Override
