@@ -21,6 +21,17 @@
         android:padding="@dimen/qr_standard_padding">
     </RelativeLayout>
 
+    <!-- Text in bottom for warning -->
+    <TextView
+        android:id="@+id/warning_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:background="@color/transparent"
+        android:text="@string/msg_scan_warning"
+        android:textColor="@color/info_text"
+        android:visibility="gone" />
+
     <!-- Text in bottom when scanning -->
     <TextView
         android:id="@+id/status_view"
@@ -29,6 +40,6 @@
         android:layout_gravity="bottom|center_horizontal"
         android:background="@color/transparent"
         android:text="@string/msg_scan_default"
-        android:textColor="@color/status_text"
+        android:textColor="@color/info_text"
         android:visibility="gone" />
 </merge>

@@ -17,6 +17,8 @@ public final class HTMLGenerator {
 
     private final static int G_DEFAULT_WIDTH = 270;
     private final static int G_DEFAULT_HEIGHT = 150;
+    private final static int SETTING_WINDOW_WIDTH = 600;
+    private final static int SETTING_WINDOW_HEIGHT = 200;
     private final static String[] LINE_COLORS = {"#ff0066", "#00cc00", "#0066cc", "#6600ff"};
     private final static int COLOR_NUMBER = LINE_COLORS.length;
     private static int token = 0;
@@ -122,7 +124,7 @@ public final class HTMLGenerator {
      * @return the HTML content
      */
     public static String getSettingsPage(SettingsModel settingsModel) {
-        return "<html><body>" +
+        return "<html><body width='" + SETTING_WINDOW_WIDTH + "' height='" + SETTING_WINDOW_HEIGHT + "' >" +
                 "<table><tr>" +
                 "<td><img src='images/Server96.png' height='32' width='32' /></td>" +
                 "<td>WebServer</td>" +

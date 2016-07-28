@@ -20,6 +20,7 @@
     <!-- Scanner Main -->
     <string name="activity_scanner_name">Scanner</string>
     <string name="msg_scan_default">Put the QR code in the rectangle</string>
+    <string name="msg_scan_warning">Please exit and rotate your device</string>
     <string name="msg_scan_result_no_data">No data to display.</string>
     <string name="msg_scan_process">In processing... Please wait...</string>
 
