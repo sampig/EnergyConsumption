@@ -13,6 +13,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -60,6 +61,8 @@ import org.zhuzhu.energyconsumption.scanner.utils.ScreenManager;
 import org.zhuzhu.energyconsumption.scanner.view.ViewfinderView;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -76,10 +79,11 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
 
     private static final int CAMERA_OFFSET = 10;
     private static final long SCAN_DELAY_MS = 10000L;
-    private static final double SCALE_GRAPH = 1.5;
+    private double scaleGraph = 1.5;
+    private double scaleLayout = 1.5;
 
-    private static final int SETTING_WINDOW_WIDTH = 600;
-    private static final int SETTING_WINDOW_HEIGHT = 200;
+    private static final double SETTING_WINDOW_WIDTH_SCALE = 0.6;
+    private static final double SETTING_WINDOW_HEIGHT_SCALE = 0.3;
 
     private Point resolution;
 
@@ -94,6 +98,7 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
     private String characterSet;
 
     private TextView statusView;
+    private TextView warningView;
     private List<Result> listResult;
     private List<ResultModel> listResultModel;
     private RelativeLayout resultGraphView;
@@ -133,17 +138,23 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
         viewfinderView.setCameraManager(cameraManager);
         statusView = (TextView) findViewById(R.id.status_view);
+        warningView = (TextView) findViewById(R.id.warning_view);
         resultGraphView = (RelativeLayout) findViewById(R.id.result_graph_view);
         handler = null;
         listResult.clear();
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+
         resetResultView(true);
         inactivityTimer.onResume();
         Intent intent = getIntent();
         decodeFormats = null;
         characterSet = null;
 
-        setRequestedOrientation(this.getCurrentOrientation());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            //noinspection WrongConstant
+            setRequestedOrientation(getCurrentOrientation());
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
 
         Point point = ScreenManager.getScreenResolution(this.getApplicationContext());
         cameraManager.setManualFramingRect(point.x - CAMERA_OFFSET, point.y - CAMERA_OFFSET);
@@ -369,6 +380,12 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
                 // if it is a text, it will be considered as a device ID.
                 String webserver = settingsManager.getWebServer();
                 deviceID = resultHandler.getDisplayContents().toString();
+                if (deviceID.contains(" ")) {
+                    try {
+                        deviceID = URLEncoder.encode(deviceID,"UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                    }
+                }
                 if (webserver.endsWith("/")) {
                     requestURL = webserver + deviceID + "/" + localQuantity;
                 } else {
@@ -396,21 +413,35 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         WebSettings webSettings = webview.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webview.requestFocusFromTouch();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            scaleGraph = 1.5;
+            scaleLayout = 1.5;
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //webview.setInitialScale(1);
+            //webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+            //webSettings.setLoadWithOverviewMode(true);
+            //webSettings.setUseWideViewPort(true);
+            scaleGraph = 2.0;
+            scaleLayout = 1.5;
+        } else {
+            scaleGraph = 1;
+            scaleLayout = 1.5;
+        }
         String contentHTML;
         if (flagError) {
-            contentHTML = HTMLGenerator.getErrorPage((int) (bitmapWidth / SCALE_GRAPH), (int) (bitmapHeight / SCALE_GRAPH));
+            contentHTML = HTMLGenerator.getErrorPage((int) (bitmapWidth / scaleGraph), (int) (bitmapHeight / scaleGraph));
         } else if (responseData == null || "".equalsIgnoreCase(responseData) || dm == null || dm.data == null || dm.data.size() == 0) {
-            contentHTML = HTMLGenerator.getHTMLContent(null, (int) (bitmapWidth / SCALE_GRAPH), (int) (bitmapHeight / SCALE_GRAPH));
-        } else {
-            contentHTML = HTMLGenerator.getHTMLContent(dm.data, bitmapWidth, bitmapHeight);
+            contentHTML = HTMLGenerator.getHTMLContent(null, (int) (bitmapWidth / scaleGraph), (int) (bitmapHeight / scaleGraph));
+        } else { // display data diagram
+            contentHTML = HTMLGenerator.getHTMLContent(dm.data, (int) (bitmapWidth / scaleGraph), (int) (bitmapHeight / scaleGraph));
         }
         webview.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         webview.loadDataWithBaseURL("file:///android_asset/", contentHTML, "text/html", "utf-8", null);
         RelativeLayout webviewLayout = new RelativeLayout(getApplicationContext());
         webviewLayout.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.settings_result_window));
         //(getResources().getDrawable(R.drawable.graph_window));
-        webviewLayout.addView(webview, new RelativeLayout.LayoutParams((int) (bitmapWidth * SCALE_GRAPH), (int) (bitmapHeight * SCALE_GRAPH)));
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int) (bitmapWidth * SCALE_GRAPH), (int) (bitmapHeight * SCALE_GRAPH));
+        webviewLayout.addView(webview, new RelativeLayout.LayoutParams((int) (bitmapWidth * scaleLayout), (int) (bitmapHeight * scaleLayout)));
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int) (bitmapWidth * scaleLayout), (int) (bitmapHeight * scaleLayout));
         RelativeLayout queueLayout = new RelativeLayout(getApplicationContext());
         params.addRule(RelativeLayout.BELOW, 20);
         params.leftMargin = (int) position.getX();
@@ -464,8 +495,8 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
 //        statusView.setText("Settings current: " + settingsManager.getWebServer() + ", " + settingsManager.getQuantity());
 //        statusView.setVisibility(View.VISIBLE);
 
-        int width = 600;
-        int height = 200;
+        int width = (int) (resolution.x * SETTING_WINDOW_WIDTH_SCALE);
+        int height = (int) (resolution.y * SETTING_WINDOW_HEIGHT_SCALE);
 
         settingView = new WebView(this);
         settingView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.transparent));
@@ -559,19 +590,28 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
             switch (rotation) {
                 case Surface.ROTATION_0:
                 case Surface.ROTATION_90:
+                    warningView.setVisibility(View.GONE);
+                    // break;
                     return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-                default:
+                case Surface.ROTATION_270:
+                    warningView.setVisibility(View.VISIBLE);
                     return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                default:
+                    break;
+                    //return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
             }
         } else {
             switch (rotation) {
                 case Surface.ROTATION_0:
                 case Surface.ROTATION_270:
-                    return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                    break;
+                    //return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
                 default:
-                    return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+                    break;
+                    //return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
             }
         }
+        return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
     }
 
     @Override
@@ -622,13 +662,16 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
                 String content = HTMLGenerator.getSettingsPage(sm);
                 settingView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 settingView.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
+
+                int width = (int) (resolution.x * SETTING_WINDOW_WIDTH_SCALE);
+                int height = (int) (resolution.y * SETTING_WINDOW_HEIGHT_SCALE);
                 RelativeLayout webviewLayout = new RelativeLayout(getApplicationContext());
-                webviewLayout.addView(settingView, new RelativeLayout.LayoutParams(SETTING_WINDOW_WIDTH, SETTING_WINDOW_HEIGHT));
+                webviewLayout.addView(settingView, new RelativeLayout.LayoutParams(width, height));
                 webviewLayout.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.settings_result_window));
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(SETTING_WINDOW_WIDTH, SETTING_WINDOW_HEIGHT);
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);
                 RelativeLayout queueLayout = new RelativeLayout(getApplicationContext());
-                params.leftMargin = (resolution.x - SETTING_WINDOW_WIDTH) / 2;
-                params.topMargin = (resolution.y - SETTING_WINDOW_HEIGHT) / 2;
+                params.leftMargin = (resolution.x - width) / 2;
+                params.topMargin = (resolution.y - height) / 2;
                 queueLayout.addView(webviewLayout, params);
                 resultGraphView.addView(queueLayout);
                 settingView.setOnLongClickListener(new View.OnLongClickListener() {

@@ -16,7 +16,7 @@
     <color name="result_text">#ffffffff</color>
     <color name="result_minor_text">#ffc0c0c0</color>
     <color name="status_view">#50000000</color>
-    <color name="status_text">#ffffffff</color>
+    <color name="info_text">#ffffffff</color>
     <color name="result_graph_background">#ccffffff</color>
     <color name="result_graph_border">#ff0000ff</color>
 
