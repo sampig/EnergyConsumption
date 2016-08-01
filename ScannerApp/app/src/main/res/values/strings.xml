@@ -5,6 +5,7 @@
     <!-- Common -->
     <string name="button_ok">OK</string>
     <string name="button_cancel">Cancel</string>
+    <string name="button_confirm">Confirm</string>
     <string name="button_discard">Discard</string>
 
     <!-- Settings -->

@@ -41,6 +41,7 @@ public final class ResultHandlerFactory {
      * @return the corresponded handler.
      */
     public static ResultHandler makeResultHandler(ECScannerMainActivity activity, Result rawResult) {
+        // TODO: ResultDataHandler to deal with data request; ResultSettingHandler to deal with settings.
         ParsedResult result = parseResult(rawResult);
         // only deal with text and URL:
         switch (result.getType()) {
@@ -50,7 +51,7 @@ public final class ResultHandlerFactory {
             default:
                 return null;
         }
-        return new ScanningResultHandler(activity, result, rawResult);
+        return new ResultDataHandler(activity, result, rawResult);
     }
 
     /**

@@ -266,7 +266,7 @@ Open the APP. It will be a camera preview. Start scanning now.
 
 ![](resources/images/05_1APPicon.png?raw=true)
 
-If you scan a QR code which contains the information for settings, it will display the new settings. The window will be in the center of the screen.
+If you scan a QR code which contains the information for settings, it will display the new settings. The window will be in the center of the screen. After long pressing the window or scanning another QR code after 10s, the window will disappear.
 
 ![](resources/images/05_2SettingQuantity.png?raw=true)
 
