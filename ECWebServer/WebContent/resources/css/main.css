@@ -1,0 +1,26 @@
+.firstColumn {
+    color: #5e6b75;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 0;
+    text-align: right;
+    vertical-align: top;
+    width: 150px;
+}
+.secondColumn {
+    color: #5e6b75;
+    font-size: 12px;
+    font-weight: bold;
+    width: 300px;
+}
+
+#qrimageresult {
+    background-color: #ccccff;
+    display: table;
+    height: 300px;
+    width: 300px;
+    padding: 1px;
+    position: relative;
+    text-align: center;
+    vertical-align: middle;
+}

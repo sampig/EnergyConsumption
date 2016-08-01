@@ -17,20 +17,16 @@
 				</li>
 			</ol>
 		</li>
-		<li>JSON Text: <code>{'deviceID':'device_id','webserver':'url','direct':boolean}</code></li>
+		<li>JSON Text: <code>{'deviceID':'device_id','webserver':'url','quantity':int,direct':boolean}</code>  (only deviceID is mandatory and other values are optional. this type is most flexible and adapted to different servers.)</li>
 	</ol>
 
 	<p>Response Data: <a href="ecws/deviceID/660BF0945365A2A4" target="_blank">ecws/deviceID/{deviceID}[/quantity]</a></p>
 	<div class="highlight highlight-source-json">
 		<pre>{
     <span class="pl-ii">'DeviceID'</span>:<span class="pl-ii">'device_id'</span>,
-    <span class="pl-ii">'Data'</span>:{
-        <span class="pl-ii">'2016-06-29</span> <span class="pl-ii">12</span>:<span
-				class="pl-c1">36</span><span class="pl-ii">:</span><span
-				class="pl-c1">25</span><span class="pl-ii">':</span><span
-				class="pl-c1">33.3137</span>,
-        <span class="pl-ii">'time'</span>:<span class="pl-ii">value</span>
-    }
+    <span class="pl-ii">'Data'</span>:[
+        <span class="pl-ii">value[, ...]</span>
+    ]
 }</pre>
 	</div>
 
@@ -47,6 +43,7 @@
 	</div>
 	<p><a href="ecws" target="_blank">URL format</a></p>
 	<p><a href="ecws/allDevices" target="_blank">all devices</a></p>
+	<p><a href="generator.html" target="_blank">Generator</a></p>
 
 </body>
 </html>
