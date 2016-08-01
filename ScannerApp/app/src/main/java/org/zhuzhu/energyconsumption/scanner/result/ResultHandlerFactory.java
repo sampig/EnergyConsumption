@@ -50,7 +50,7 @@ public final class ResultHandlerFactory {
             default:
                 return null;
         }
-        return new ScanningResultHandler(activity, result, rawResult);
+        return new ResultDataHandler(activity, result, rawResult);
     }
 
     /**

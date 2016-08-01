@@ -11,11 +11,11 @@ import com.google.zxing.client.result.ParsedResult;
 import org.zhuzhu.energyconsumption.scanner.R;
 
 /**
- * This is to handle the scanning result.
+ * This is to handle the scanning result of setting.
  *
  * @author Chenfeng Zhu
  */
-public final class ScanningResultHandler extends ResultHandler {
+public final class ResultSettingHandler extends ResultHandler {
 
     private static final int[] buttons = {
 //            R.string.button_scan_detail_info,
@@ -23,7 +23,7 @@ public final class ScanningResultHandler extends ResultHandler {
             R.string.button_discard
     };
 
-    public ScanningResultHandler(Activity activity, ParsedResult result, Result rawResult) {
+    public ResultSettingHandler(Activity activity, ParsedResult result, Result rawResult) {
         super(activity, result, rawResult);
     }
 
