@@ -41,8 +41,6 @@ import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.client.android.camera.CameraManager;
-import com.google.zxing.client.android.decode.DecodeFormatManager;
-import com.google.zxing.client.android.decode.DecodeHintManager;
 import com.google.zxing.client.android.decode.InactivityTimer;
 import com.google.zxing.client.result.ParsedResultType;
 import com.google.zxing.client.result.ResultParser;
@@ -56,7 +54,6 @@ import org.zhuzhu.energyconsumption.scanner.result.ResultHandlerFactory;
 import org.zhuzhu.energyconsumption.scanner.result.ResultModel;
 import org.zhuzhu.energyconsumption.scanner.utils.HTMLGenerator;
 import org.zhuzhu.energyconsumption.scanner.utils.HTTPUtils;
-import org.zhuzhu.energyconsumption.scanner.utils.Intents;
 import org.zhuzhu.energyconsumption.scanner.utils.ScreenManager;
 import org.zhuzhu.energyconsumption.scanner.view.ViewfinderView;
 
@@ -80,7 +77,7 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
     private static final int CAMERA_OFFSET = 10;
     private static final long SCAN_DELAY_MS = 10000L;
     private double scaleGraph = 1.5;
-    private double scaleLayout = 1.5;
+    private double scaleLayout = 1.3;
 
     private static final double SETTING_WINDOW_WIDTH_SCALE = 0.6;
     private static final double SETTING_WINDOW_HEIGHT_SCALE = 0.3;
@@ -149,6 +146,7 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         decodeFormats = null;
         characterSet = null;
 
+        // TODO: set the orientation
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             //noinspection WrongConstant
             setRequestedOrientation(getCurrentOrientation());
@@ -158,33 +156,6 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
 
         Point point = ScreenManager.getScreenResolution(this.getApplicationContext());
         cameraManager.setManualFramingRect(point.x - CAMERA_OFFSET, point.y - CAMERA_OFFSET);
-
-        if (intent != null) {
-            String action = intent.getAction();
-            if (Intents.Scan.ACTION.equals(action)) {
-                // Scan the formats the intent requested, and return the result to the calling activity.
-                decodeFormats = DecodeFormatManager.parseDecodeFormats(intent);
-                decodeHints = DecodeHintManager.parseDecodeHints(intent);
-                if (intent.hasExtra(Intents.Scan.WIDTH) && intent.hasExtra(Intents.Scan.HEIGHT)) {
-                    int width = intent.getIntExtra(Intents.Scan.WIDTH, 0);
-                    int height = intent.getIntExtra(Intents.Scan.HEIGHT, 0);
-                    if (width > 0 && height > 0) {
-                        cameraManager.setManualFramingRect(width, height);
-                    }
-                }
-                if (intent.hasExtra(Intents.Scan.CAMERA_ID)) {
-                    int cameraId = intent.getIntExtra(Intents.Scan.CAMERA_ID, -1);
-                    if (cameraId >= 0) {
-                        cameraManager.setManualCameraId(cameraId);
-                    }
-                }
-                String customPromptMessage = intent.getStringExtra(Intents.Scan.PROMPT_MESSAGE);
-                if (customPromptMessage != null) {
-                    statusView.setText(customPromptMessage);
-                }
-            }
-            characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
-        }
 
         SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
         SurfaceHolder surfaceHolder = surfaceView.getHolder();
@@ -306,6 +277,7 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
             }
         }
 
+        // TODO: start a timer for delay.
         if (listResult.size() > 0 || settingView != null) {
             restartPreviewAfterDelay(SCAN_DELAY_MS);
         } else {
@@ -331,6 +303,7 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
      */
     @SuppressLint("SetJavaScriptEnabled")
     private void handleDecodeInternally(Result rawResult, ResultHandler resultHandler, Bitmap qrCode) {
+        // TODO: handling results should be in Result*Handler.
         // check the content in the QR code
         Log.d(TAG, qrCode.toString());
         boolean flagError = false;
@@ -404,8 +377,8 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         // get the position and size of the QR Code
         ResultPoint[] points = rawResult.getResultPoints();
         ResultPoint position = points[1];
-        int bitmapWidth = (int) (points[2].getX() - position.getX());
-        int bitmapHeight = (int) (points[0].getY() - position.getY());
+        int bitmapWidth = (int) Math.abs(points[2].getX() - position.getX());
+        int bitmapHeight = (int) Math.abs(points[0].getY() - position.getY());
 
         WebView webview = new WebView(this);
         webview.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.transparent));
@@ -415,17 +388,17 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         webview.requestFocusFromTouch();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             scaleGraph = 1.5;
-            scaleLayout = 1.5;
+            scaleLayout = 1.3;
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             //webview.setInitialScale(1);
             //webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
             //webSettings.setLoadWithOverviewMode(true);
             //webSettings.setUseWideViewPort(true);
             scaleGraph = 2.0;
-            scaleLayout = 1.5;
+            scaleLayout = 1.3;
         } else {
             scaleGraph = 1;
-            scaleLayout = 1.5;
+            scaleLayout = 1.3;
         }
         String contentHTML;
         if (flagError) {
@@ -458,6 +431,7 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
             }
         });
 
+        // TODO: in order to skip if scanning continuously.
         ResultModel model = new ResultModel(deviceID);
         if (listResultModel.contains(model)) {
             int i = listResultModel.indexOf(model);
@@ -483,15 +457,12 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         // update the settings in local database.
         if (settingsModel.quantity > 0) {
             settingsManager.updateQuantity(settingsModel.quantity);
-//            System.out.println("***Settings changed: " + settingsManager.getQuantity());
         }
         if (settingsModel.webserver != null) {
             settingsManager.updateWebServer(settingsModel.webserver);
-//            System.out.println("***Settings changed: " + settingsManager.getWebServer());
         }
         settingsModel.webserver = settingsManager.getWebServer();
         settingsModel.quantity = settingsManager.getQuantity();
-//        System.out.println("Settings current: " + settingsManager.getWebServer() + ", " + settingsManager.getQuantity());
 //        statusView.setText("Settings current: " + settingsManager.getWebServer() + ", " + settingsManager.getQuantity());
 //        statusView.setVisibility(View.VISIBLE);
 
@@ -514,6 +485,7 @@ public class ECScannerMainActivity extends Activity implements SurfaceHolder.Cal
         queueLayout.addView(webviewLayout, params);
         resultGraphView.addView(queueLayout);
 
+        // long press to make setting window disappear.
         settingView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {

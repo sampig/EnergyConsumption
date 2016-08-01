@@ -21,7 +21,7 @@ public final class HTMLGenerator {
     private final static int SETTING_WINDOW_HEIGHT = 200;
     private final static String[] LINE_COLORS = {"#ff0066", "#00cc00", "#0066cc", "#6600ff"};
     private final static int COLOR_NUMBER = LINE_COLORS.length;
-    private static int token = 0;
+    private static int token = 0; // used to change line color.
     private final static String TEXT_COLOR = "#f52714";
     private final static int LINE_WIDTH = 3;
     private final static String BACKGROUND_COLOR = "transparent";
@@ -47,7 +47,7 @@ public final class HTMLGenerator {
      * @return the HTML content
      */
     public static String getHTMLContent(List<Double> listData, int width, int height) {
-        // TODO: improve
+        // TODO: improve the layout
         String lineColor = LINE_COLORS[token % COLOR_NUMBER];
         StringBuilder sb = new StringBuilder();
 

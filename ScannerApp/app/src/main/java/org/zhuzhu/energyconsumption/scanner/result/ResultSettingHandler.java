@@ -18,8 +18,7 @@ import org.zhuzhu.energyconsumption.scanner.R;
 public final class ResultSettingHandler extends ResultHandler {
 
     private static final int[] buttons = {
-//            R.string.button_scan_detail_info,
-//            R.string.button_scan_save_history,
+            R.string.button_confirm,
             R.string.button_discard
     };
 
@@ -27,54 +26,27 @@ public final class ResultSettingHandler extends ResultHandler {
         super(activity, result, rawResult);
     }
 
-//    @Override
-//    public int getButtonCount() {
-//        return buttons.length;
-//    }
+    @Override
+    public int getButtonCount() {
+        return buttons.length;
+    }
 
-//    @Override
-//    public int getButtonText(int index) {
-//        return buttons[index];
-//    }
+    @Override
+    public int getButtonText(int index) {
+        return buttons[index];
+    }
 
-//    @Override
-//    public void handleButtonPress(int index) {
-//        String text = super.getParsedResult().getDisplayResult();
-//        switch (index) {
-//            case 0:
-//                this.viewDetail(text);
-//                break;
-//            case 1:
-//                this.saveToHistory(text);
-//                break;
-//            case 2:
-//                super.getActivity().onKeyDown(KeyEvent.KEYCODE_BACK, null);
-//                break;
-//        }
-//    }
+    @Override
+    public void handleButtonPress(int index) {
+        // TODO: confirm the change or cancel the change.
+        switch (index) {
+            case 0:
+                // accept the change.
+                break;
+            case 1:
+                // cancel the change.
+                break;
+        }
+    }
 
-    /**
-     * Lauch an activity to view the detail information of device.
-     *
-     * @param deviceId ID of device
-     */
-//    private void viewDetail(String deviceId) {
-//        Intent intent = new Intent();
-//        if (intent.getAction() == null) {
-//            Toast.makeText(super.getActivity().getApplicationContext(),
-//                    " Detail function has not been done: (" + deviceId + ')',
-//                    Toast.LENGTH_SHORT).show();
-//        }
-//    }
-
-    /**
-     * Save the scanning result into history.
-     *
-     * @param deviceId ID of device
-     */
-//    private void saveToHistory(String deviceId) {
-//        Toast.makeText(super.getActivity().getApplicationContext(),
-//                " Save function has not been done: (" + deviceId + ')',
-//                Toast.LENGTH_SHORT).show();
-//    }
 }

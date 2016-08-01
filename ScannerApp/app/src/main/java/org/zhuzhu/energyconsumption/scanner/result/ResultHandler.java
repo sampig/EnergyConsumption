@@ -62,7 +62,7 @@ public abstract class ResultHandler {
      *
      * @return The integer button count.
      */
-//    public abstract int getButtonCount();
+    public abstract int getButtonCount();
 
     /**
      * The text of the nth action button.
@@ -70,14 +70,14 @@ public abstract class ResultHandler {
      * @param index From 0 to getButtonCount() - 1
      * @return The button text as a resource ID
      */
-//    public abstract int getButtonText(int index);
+    public abstract int getButtonText(int index);
 
     /**
      * Execute the action which corresponds to the nth button.
      *
      * @param index The button that was clicked.
      */
-//    public abstract void handleButtonPress(int index);
+    public abstract void handleButtonPress(int index);
 
     /**
      * Create a possibly styled string for the contents of the current barcode.
