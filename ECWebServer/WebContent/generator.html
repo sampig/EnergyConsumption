@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="./resources/css/main.css" rel="stylesheet" type="text/css" />
+<script src="./resources/js/jquery-1.12.4.min.js" language="javascript"
+	type="text/javascript"></script>
+<script src="./resources/js/generator.js" language="javascript"
+	type="text/javascript"></script>
+<title>EC Web QR Generator</title>
+</head>
+<body>
+	<div>
+		<form id="generatorForm" action="qrgenerator" method="post">
+			<table id="mainpanel" cellspacing="0" cellpadding="0">
+				<tbody>
+					<tr>
+						<td>
+							<table id="leftpanel" cellspacing="0" cellpadding="0">
+								<tbody>
+									<tr>
+										<td><table>
+												<colgroup>
+													<col class="firstColumn">
+													<col class="secondColumn">
+												</colgroup>
+												<tbody>
+													<tr>
+														<td class="firstColumn">Type</td>
+														<td class="secondColumn"><select id="typeSelector">
+																<option value="Device">Device ID</option>
+																<option value="URL">URL</option>
+																<option value="JSON">JSON Data</option>
+																<option value="Setting">Setting</option>
+                                                                <option value="Plain">Plain Text</option>
+														</select></td>
+													</tr>
+												</tbody>
+											</table></td>
+									</tr>
+									<tr>
+										<td><table>
+												<colgroup>
+													<col class="firstColumn">
+													<col class="secondColumn">
+												</colgroup>
+												<tbody id='mainFormBody'>
+													<tr>
+														<td class="firstColumn">Device ID</td>
+														<td class="secondColumn"><input name='contentText'/></td>
+													</tr>
+												</tbody>
+											</table></td>
+									</tr>
+									<tr>
+										<td><table>
+												<colgroup>
+													<col class="firstColumn">
+													<col class="secondColumn">
+												</colgroup>
+												<tbody>
+													<tr>
+														<td class="firstColumn">QR Code size</td>
+														<td class="secondColumn"><select name="qrcodeSize">
+																<option value="120">Small</option>
+																<option value="230">Medium</option>
+																<option value="300">Large</option>
+														</select></td>
+													</tr>
+													<tr>
+														<td class="firstColumn">Error correction</td>
+														<td class="secondColumn"><select name="qrcodeLevel">
+																<option value="L">L</option>
+																<option value="M">M</option>
+																<option value="Q">Q</option>
+																<option value="H">H</option>
+														</select></td>
+													</tr>
+												</tbody>
+											</table></td>
+									</tr>
+									<tr>
+										<td><table>
+												<colgroup>
+													<col class="firstColumn">
+													<col class="secondColumn">
+												</colgroup>
+												<tbody>
+													<tr>
+														<td></td>
+														<td><button type="button" id="btnGenerate">Generate</button></td>
+													</tr>
+												</tbody>
+											</table></td>
+									</tr>
+								</tbody>
+							</table>
+						</td>
+						<td>
+							<div id="qrimageresult"></div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+	</div>
+</body>
+</html>
