@@ -5,9 +5,11 @@
 #
 
 import ConfigParser
+import os
 
 config = ConfigParser.RawConfigParser()
-config.read('config.properties')
+configFile = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config.properties')
+config.read(configFile)
 
 # Get hostname and port of Ostinato
 def getOstinatoConfigHost():
@@ -24,5 +26,4 @@ def getDevicesFileName():
 def getSIPServerURI():
     serveruri = config.get('SIP', 'sip.serveruri')
     return serveruri
-
 

@@ -5,11 +5,14 @@
 # This file is used to get all devices to save time.
 #
 
+import os
+
 from conf import properties_reader
 
 
 def getDevices():
     filename = properties_reader.getDevicesFileName()
+    filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), filename)
     
     mac_addresses = []
     device_names = {}
