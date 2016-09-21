@@ -7,6 +7,10 @@
 
 # system
 import binascii
+import signal
+import sys
+import threading
+import time
 
 # third-party
 from ostinato.core import ost_pb, DroneProxy
@@ -18,7 +22,68 @@ from ostinato.protocols.udp_pb2 import udp
 from ostinato.protocols.hexdump_pb2 import hexDump
 
 # user-defined
-from conf import properties_reader
+from ecclient.conf import properties_reader
+from ecclient.utils import devices_reader
+
+''' start data generation '''
+def startDataGeneration(num=1):
+    global dataGen, mac_addresses
+    mac_addresses = devices_reader.getDevices()[0]
+    num_devices = len(mac_addresses)
+    if (num < 1):
+        num = num_devices
+    
+    dataGen = DataGeneratorOstinato()
+    dataGen.create_stream(num)
+
+    i = 0
+    num_packets = 1  # 000
+    packets_per_sec = num * 44000  # 000
+    #src_mac = int(mac_addresses[i], 16) #0x00aabbccddee 733295205870
+    dst_mac = 0x000000000000
+    src_ip = 0x01020304
+    dst_ip = 0x7f000001
+    src_port = 80
+    dst_port = 17878
+    print "Starting data generation by Ostinato...\t", "number of devices: ", str(num)
+    while i < num:
+        try:
+            if i == num - 1:
+                dataGen.setStreamcontrolParameters(num_packets, packets_per_sec, False)
+            else:
+                dataGen.setStreamcontrolParameters(num_packets, packets_per_sec, True)
+            src_mac = int(mac_addresses[i], 16)
+            dataGen.setProtocolSourceParameters(src_mac, src_ip, src_port)
+            dataGen.setProtocolDestinationParameters(dst_mac, dst_ip, dst_port)
+            dataGen.add_stream(i)
+            #dst_ports.append(dst_port)
+            i += 1
+            #src_mac += 1#src_mac = int(mac_addresses[i], 16) #
+            #dst_port += 1
+        except:
+            print "Error"
+            # dataGen.stream_stop()
+            exit
+    dataGen.start_stream()
+
+''' stop data generation '''
+def stopDataGeneration():
+    time.sleep(10)
+    print "Stopping data generation..."
+    try:
+        dataGen.stop_stream()
+        dataGen.disconnect()
+        sys.exit(0)
+    except:
+        pass
+    finally:
+        sys.exit(0)
+
+''' handle with CTRL+C '''
+def sigint_handler(signum, frame):
+    stopDataGeneration()
+    print 'Stop pressing the CTRL+C!'
+
 
 '''
 This class use Ostinato to create packets
@@ -27,6 +92,7 @@ class DataGeneratorOstinato(object):
 
     HOST_NAME = '127.0.0.1'  # host ip for the drone
     HOST_PORT_NUMBER = 7878  # host port for the drone
+    # get the config from property file
     HOST_NAME, HOST_PORT_NUMBER = properties_reader.getOstinatoConfigHost()
 
     TX_PORT_NUMBER = 2  # ports for different devices
@@ -208,4 +274,9 @@ class DataGeneratorOstinato(object):
         self.drone.deleteStream(self.stream_id)
 
         self.drone.disconnect()
+
+if __name__ == "__main__":
+    startDataGeneration(0)
+    signal.signal(signal.SIGINT, sigint_handler)
+    threading.Thread(target=stopDataGeneration, args=[]).start()
 
