@@ -7,7 +7,7 @@
 
 import os
 
-from conf import properties_reader
+from ecclient.conf import properties_reader
 
 
 def getDevices():
