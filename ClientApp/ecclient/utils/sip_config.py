@@ -117,12 +117,24 @@ if __name__ == "__main__":
         pass
     else:
         buddy.send_typing_ind(True)
-        msg = str(123.456)  # sys.stdin.readline().rstrip("\r\n")
+        arr = []
+        for i in xrange(0,200):
+            arr.append("123456," + str(1234.456))
+        msg = "aabbccddeeff|" + "20160909151515|" + ";".join(arr)
         if msg == "":
             buddy.send_typing_ind(False)
         else:
             buddy.send_pager(msg)
-            print "Send " + msg + " to server."
+            print "Send " + str(len(arr)) + " to server." + str(len(msg))
+        arr = []
+        for i in xrange(0,100):
+            arr.append("20160909151515123456," + str(1234.456))
+        msg = "aabbccddeeff|" + "|;".join(arr)
+        if msg == "":
+            buddy.send_typing_ind(False)
+        else:
+            buddy.send_pager(msg)
+            print "Send " + str(len(arr)) + " to server." + str(len(msg))
         # time.sleep(1/4400)
     disconnect()
 

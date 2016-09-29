@@ -23,14 +23,6 @@ def getSaveFilenameFmt():
     file_fmt = config.get("Transmit","transmit.savefilefmt")
     return file_fmt
 
-def getSyncFilePath():
-    filepath = config.get("Sync","sync.savefilepath")
-    return filepath
-
-def getSyncFilenameFmt():
-    file_fmt = config.get("Sync","sync.savefilefmt")
-    return file_fmt
-
 # Get hostname and port of Ostinato
 def getOstinatoConfigHost():
     hostname = config.get("Ostinato", "ostinato.hostname")
@@ -47,9 +39,22 @@ def getSIPServerURI():
     serveruri = config.get("SIP", "sip.serveruri")
     return serveruri
 
+def getSyncFilePath():
+    filepath = config.get("Sync","sync.savefilepath")
+    return filepath
+
+def getSyncFilenameFmt():
+    file_fmt = config.get("Sync","sync.savefilefmt")
+    return file_fmt
+
+def getSyncServer():
+    ip = config.get("Sync","sync.serverip")
+    port = config.getint("Sync","sync.serverport")
+    return (ip, port)
 
 if __name__ == "__main__":
     print "Save Filename Format: ", getSaveFilenameFmt()
     print "Ostinato Config: ", getOstinatoConfigHost()
     print "SIP Server URI: ", getSIPServerURI()
+    print "Sync Server: ", getSyncServer()
 
