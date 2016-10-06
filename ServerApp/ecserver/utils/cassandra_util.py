@@ -45,7 +45,7 @@ class CassandraManager():
 
     def insertConsumption(self, row_data):
         session = self.connection.getSession()
-        print "inserting dc: ", row_data.device_id, timestamp, row_data.count
+        # print "inserting dc: ", row_data.device_id, timestamp, row_data.count
         insert_stmt = session.prepare("INSERT INTO " + self.table_consumption +
                                       " (device_id, ec_date, ec_time, start_us, end_us, ec_consumption_values, values_count, values_checksum, insert_time)" +
                                       " VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())")
@@ -64,7 +64,7 @@ class CassandraManager():
             end_us = arr_value[len(arr_value)-1][0:6]
         else:
             return
-        print "inserting raw: ", device_id, timestamp, count
+        # print "inserting raw: ", device_id, timestamp, count
         insert_stmt = session.prepare("INSERT INTO " + self.table_consumption +
                                       " (device_id, ec_date, ec_time, start_us, end_us, ec_consumption_values, values_count, values_checksum, insert_time)" +
                                       " VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())")

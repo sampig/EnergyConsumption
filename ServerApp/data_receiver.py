@@ -3,125 +3,144 @@
 # This file is part of the "Energy Consumption" project.
 #
 
-import sys
 import time
-import datetime
-import pjsua as pj
+import threading
+import sys
+import pjsua
 
-from conf import properties_reader
-
+from ecserver.conf import properties_reader
+from ecserver.utils import sip_config, cassandra_util
 
 LOG_LEVEL = 3
-pending_pres = None
-pending_uri = None
+
+SLEEP_TIME = 5
 
 PUBLIC_ADDR = properties_reader.getSIPPublicAddr()
 PORT = properties_reader.getSIPPort()
 
-SLEEP_TIME = 5
+# pending_pres = None
+# pending_uri = None
+
+pjsua_lib = None
+pjsua_transport = None
+
+buddy_list = []
+
+db_connection = None
+db_manager = None
 
 values = []
 
-class MyAccountCallback(pj.AccountCallback):
-    def __init__(self, account=None):
-        pj.AccountCallback.__init__(self, account)
-
-    def on_incoming_subscribe(self, buddy, from_uri, contact_uri, pres):
-        global pending_pres, pending_uri
-        # Allow buddy to subscribe to our presence
-        if buddy:
-            return (200, None)
-        pending_pres = pres
-        pending_uri = from_uri
-        return (202, None)
-
-class MyBuddyCallback(pj.BuddyCallback):
-    def __init__(self, buddy=None):
-        pj.BuddyCallback.__init__(self, buddy)
-
-    def on_state(self):
-        #print "Buddy", self.buddy.info().uri, "is",
-        #print self.buddy.info().online_text
-        pass
+class ClientCallback(sip_config.MyBuddyCallback):
 
     def on_pager(self, mime_type, body):
-        #print "Instant message from", self.buddy.info().uri, 
-        #print "(", mime_type, "):"
-        #print body
-        values.append(body)
+        # print "Instant message from", self.buddy.info().uri,
+        # print "(", mime_type, "):"
+        # print body
+        self.handleData(body)
+        # values.append(body)
 
-    def on_pager_status(self, body, im_id, code, reason):
-        if code >= 300:
-            print "Message delivery failed for message",
-            print body, "to", self.buddy.info().uri, ":", reason
+    def handleData(self, body):
+        global db_manager
+        arr = body.split("|")
+        dev_id = arr[0]
+        time_str = arr[1]
+        data_str = arr[2]  # .split(";")
+        # print "receive: " + dev_id + "|" + time_str  # + ":" + str(len(data_arr))
+        db_manager.insertConsumptionRaw(dev_id, time_str, data_str, ";")
+        return body
 
-    def on_typing(self, is_typing):
-        pass
-        #if is_typing:
-        #    print self.buddy.info().uri, "is typing"
-        #else:
-        #    print self.buddy.info().uri, "stops typing"
+def serverListening():
 
+    global pjsua_lib, pjsua_transport  # , pending_pres, pending_uri
 
+    pjsua_lib = pjsua.Lib()
 
-lib = pj.Lib()
+    try:
+        # my_ua_cfg = pj.UAConfig()
+        # my_ua_cfg.stun_host = PUBLIC_ADDR + ":" + str(PORT)
+        pjsua_lib.init(log_cfg=pjsua.LogConfig(level=LOG_LEVEL))
+        # lib.init(ua_cfg = my_ua_cfg)
 
-try:
-    #my_ua_cfg = pj.UAConfig()
-    #my_ua_cfg.stun_host = PUBLIC_ADDR + ":" + str(PORT)
-    lib.init(log_cfg = pj.LogConfig(level=LOG_LEVEL))
-    #lib.init(ua_cfg = my_ua_cfg)
-    
-    # Create UDP transport which listens to any available port
-    transportConfig = pj.TransportConfig(port=PORT, bound_addr='', public_addr=PUBLIC_ADDR)
-    transport = lib.create_transport(pj.TransportType.UDP, transportConfig)
-    
-    print "\nListening on", transport.info().host, ":", transport.info().port, "\n"
+        # Create UDP transport which listens to any available port
+        transportConfig = pjsua.TransportConfig(port=PORT, bound_addr='', public_addr=PUBLIC_ADDR)
+        pjsua_transport = pjsua_lib.create_transport(pjsua.TransportType.UDP, transportConfig)
 
-    # Start the library
-    lib.start()
-    
-    acc = lib.create_account_for_transport(transport, cb=MyAccountCallback())
-    acc.set_basic_status(True)
-    
-    my_sip_uri = "sip:" + transport.info().host + ":" + str(transport.info().port)
-    
-    print "Public URI: " + my_sip_uri
-    
-    buddy = None
+        print "\nListening on", pjsua_transport.info().host, ":", pjsua_transport.info().port, "\n"
 
-    start = datetime.datetime.now()
+        # Start the library
+        pjsua_lib.start()
 
-    while True:
-        if not buddy:
-            if pending_pres:
-                acc.pres_notify(pending_pres, pj.SubscriptionState.ACTIVE)
-                buddy = acc.add_buddy(pending_uri, cb=MyBuddyCallback())
+        acc = pjsua_lib.create_account_for_transport(pjsua_transport, cb=sip_config.MyAccountCallback())
+        acc.buddy_list = buddy_list
+        acc.buddy_uri_list = []
+        acc.set_basic_status(True)
+
+        my_sip_uri = "sip:" + pjsua_transport.info().host + ":" + str(pjsua_transport.info().port)
+
+        print "\nPublic URI: " + my_sip_uri + "\n"
+
+        # start = datetime.datetime.now()
+
+        while True:
+            buddy = None
+            if sip_config.pending_pres:
+                acc.pres_notify(sip_config.pending_pres, pjsua.SubscriptionState.ACTIVE)
+                buddy = acc.add_buddy(sip_config.pending_uri, cb=ClientCallback())
                 buddy.subscribe()
-                start = datetime.datetime.now()
-                print "a client connected: " + pending_uri
-                pending_pres = None
-                pending_uri = None
-            else:
+                buddy_list.append(buddy)
+                acc.buddy_uri_list.append(sip_config.pending_uri)
+                # start = datetime.datetime.now()
+                print "a client connected: " + sip_config.pending_uri
+                print "new buddy list (" + str(len(acc.buddy_uri_list)) + "):",
+                print acc.buddy_uri_list
+                sip_config.pending_pres = None
+                sip_config.pending_uri = None
+            elif len(buddy_list) < 1:
                 time.sleep(SLEEP_TIME)
                 print "No clients. Continue listening..."
-        else:
-            if len(values) == 1:
-                start = datetime.datetime.now()
-                print start
-            elif len(values) >= 440:
-                end = datetime.datetime.now()
-                print end - start
-                break
+            # else:
+            #    if len(values) == 1:
+            #        start = datetime.datetime.now()
+            #    elif len(values) == 440:
+            #        end = datetime.datetime.now()
+            #        print end - start
+                    # break
 
+    except pjsua.Error, e:
+        print "Exception: " + str(e)
+        pjsua_lib.destroy()
+        pjsua_lib = None
+    except:
+        print "Unexpected error:", sys.exc_info()[0]
 
-    # Shutdown the library
-    transport = None
-    lib.destroy()
-    lib = None
+#
+def stop():
+    global pjsua_lib, pjsua_transport
+    try:
+        # Shutdown the library
+        pjsua_transport = None
+        pjsua_lib.destroy()
+        pjsua_lib = None
+    except pjsua.Error, e:
+        print "Exception: " + str(e)
 
-except pj.Error, e:
-    print "Exception: " + str(e)
-    lib.destroy()
-    lib = None
+#
+def startListening():
+    global db_connection, db_manager
+    db_connection = cassandra_util.CassandraConnection()
+    db_manager = cassandra_util.CassandraManager(db_connection)
+    threading.Thread(target=serverListening, args=[]).start()
+
+#
+def receiveData():
+
+    while True:
+        # time.sleep(SLEEP_TIME)
+        # print "current buddy list:", str(len(buddy_list))
+        pass
+
+if __name__ == "__main__":
+    startListening()
+    receiveData()
 
