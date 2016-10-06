@@ -26,7 +26,7 @@ from ecclient.conf import properties_reader
 from ecclient.utils import devices_reader
 
 ''' start data generation '''
-def startDataGeneration(num=1):
+def startDataGeneration(num=1, freq=44000):
     global dataGen, mac_addresses
     mac_addresses = devices_reader.getDevices()[0]
     num_devices = len(mac_addresses)
@@ -38,14 +38,16 @@ def startDataGeneration(num=1):
 
     i = 0
     num_packets = 1  # 000
-    packets_per_sec = num * 44000  # 000
+    packets_per_sec = num * freq  # 000
     #src_mac = int(mac_addresses[i], 16) #0x00aabbccddee 733295205870
     dst_mac = 0x000000000000
     src_ip = 0x01020304
     dst_ip = 0x7f000001
     src_port = 80
     dst_port = 17878
-    print "Starting data generation by Ostinato...\t", "number of devices: ", str(num)
+    print "Starting data generation by Ostinato..."
+    print "\tnumber of devices: " + str(num)
+    print "\tfrequency of data generation: " + str(freq) + "\n"
     while i < num:
         try:
             if i == num - 1:
