@@ -7,10 +7,11 @@ import glob
 import os
 import time
 import itertools
-from datetime import datetime
+import datetime
 
 from ecclient.conf import properties_reader
 from fileinput import filename
+from ecclient.utils import checksum_util
 
 FILE_BUFFER_SIZE = 10000
 
@@ -33,6 +34,8 @@ device_ids = [] # each device has its own file
 datafile_handlers = {}
 checksum_s_handlers = {}
 checksum_h_handlers = {}
+
+positions = {}
 
 # initialize the parameters
 def init(filepath, devIDs):
@@ -72,6 +75,7 @@ def createFiles():
             else:
                 obj = open(checksum_h_filepath, "ab")
                 checksum_h_handlers[devID] = obj
+            positions[devID] = 0
             create_new_file = False
     else:
         print "Using existing files"
@@ -80,13 +84,19 @@ def createFiles():
 # Write to the files corresponded to the device
 def writeToFile(devID, dataRows):
     global datafile_handlers, checksum_s_handlers
+    string_data = "\n".join(dataRows)
     data_handler = datafile_handlers.get(devID)
     if data_handler != None:
-        string = "\n".join(dataRows)
-        data_handler.write(string + "\n")
+        data_handler.write(string_data + "\n")
     checksum_handler = checksum_s_handlers.get(devID)
     if checksum_handler != None:
-        checksum_handler.write(devID + " checksum")
+        # filename,YYYYMMDDhh,position,count,checksum
+        count = len(dataRows)
+        string_checksum = os.path.basename(data_handler.name) + "," + dataRows[0][0:12] + "," + str(positions[devID]) + "," + str(count) + "," + checksum_util.getMD5(string_data)
+        checksum_handler.write(string_checksum + "\n")
+        checksum_handler.flush()
+        positions[devID] += count
+        # print "writing: " + str(checksum_handler) + string_checksum
 
 # Write to multiple files.
 def writeToFiles(allData):
@@ -99,7 +109,7 @@ def writeToFiles(allData):
 def createFile(devID):
     if not file_path.endswith("/"):
         file_path = file_path + "/"
-    today = datetime.now().strftime("%Y.%m.%d")
+    today = datetime.datetime.now().strftime("%Y.%m.%d")
     filename = devID + "_" + today + ".csv"
     obj = open(file_path + filename, "ab", FILE_BUFFER_SIZE)
     datafile_handlers[devID] = obj
@@ -144,15 +154,19 @@ def readFromFile(filename, start_line, count_line):
         print "The file " + filename + " cannot be found."
 
 if __name__ == "__main__":
-    devs = ["ABCD", "AHJK"]
+    devs = ["00aabbccddee", "AHJK"]
     init(None, devs)
     createFiles()
-    dataRows = ["20160920150505123456,123.456", "20160920150505654321,654.321"]
+    arr = []
+    for i in xrange(0, 44000):
+        v = str(20160909151515) + str('%06d'%i) + ":" + str(i)
+        arr.append(v)
+    dataRows = arr
     allData = {}
     allData[devs[0]] = dataRows
     allData[devs[1]] = ["20160921150505123456,123.456", "20160921150505654321,654.321"]
     #writeToFile("ABCD", dataRows)
     writeToFiles(allData)
     print getLatestFilename(devs[0])
-    print datetime.fromtimestamp(float(getLatestDatetime(devs[0])))
+    print datetime.datetime.fromtimestamp(float(getLatestDatetime(devs[0])))
     print readFromFile("ABCD_1474965308.csv", 10, 10)
