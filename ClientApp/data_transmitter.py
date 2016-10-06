@@ -181,6 +181,7 @@ def transmitData():
             else:
                 continue
         except:
+            print ""
             continue
 
 
