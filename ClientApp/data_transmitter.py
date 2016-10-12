@@ -9,6 +9,7 @@ import struct
 import binascii
 import datetime
 import threading
+import sys
 
 # from ecclient.conf import properties_reader
 from ecclient.utils import devices_reader, file_util, sip_config
@@ -86,7 +87,7 @@ def transmitData():
         time_marks[str(key)] = []
         time_us_check[str(key)] = us_str[0:17]
         time_s_check[str(key)] = None
-        time_hour_check[str(key)] = us_str[0:12]  #
+        time_hour_check[str(key)] = us_str[0:10]  #
         start_pos[str(key)] = 0
     time_values = {}
 
@@ -131,7 +132,7 @@ def transmitData():
                     time_values = total_values[m]
     
                     us_str = now.strftime("%Y%m%d%H%M%S%f")  # timestamp
-                    h_check = us_str[0:12]  # YYYYMMDDhh
+                    h_check = us_str[0:10]  # YYYYMMDDhh
                     second = us_str[0:14]  # YYYYMMDDhhmiss
                     us_check = us_str[0:17]
     
@@ -181,7 +182,7 @@ def transmitData():
             else:
                 continue
         except:
-            print ""
+            print "Unexpected error:", sys.exc_info()[0]
             continue
 
 

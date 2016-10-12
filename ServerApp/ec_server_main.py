@@ -55,7 +55,7 @@ receive_thread.start()
 '''
 
 print "Server Main: Start data synchronization..."
-sync_thread = threading.Thread(target = sync_server.startSync, args = [])
-sync_thread.start()
+#sync_thread = threading.Thread(target = sync_server.startSync, args = [])
+#sync_thread.start()
 
 

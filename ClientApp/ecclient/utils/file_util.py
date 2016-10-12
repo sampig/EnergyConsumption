@@ -13,7 +13,11 @@ from ecclient.conf import properties_reader
 from fileinput import filename
 from ecclient.utils import checksum_util
 
-FILE_BUFFER_SIZE = 10000
+FILE_BUFFER_SIZE = 100000000 # for testing
+# max signed int: 2^31 -1 = 2147483647
+# data in 1 hour: 30 * 44000 * 60 * 60 = 4752000000
+
+CHECKSUM_AVG_LINE_LENGTH = 100 
 
 # flag for creating a new file
 create_new_file = True
@@ -81,14 +85,25 @@ def createFiles():
         print "Using existing files"
         pass
 
+#
+def syncInit(timeStr):
+    global device_ids, checksum_h_handlers, datafile_handlers
+    for devID in device_ids:
+        checksum_filepath = getLatestChecksumFilepath(devID)
+        if os.path.isfile(checksum_filepath) and os.access(checksum_filepath, os.R_OK):
+            obj = open(checksum_filepath, "a+")
+            checksum_h_handlers[devID] = obj
+            
+
 # Write to the files corresponded to the device
 def writeToFile(devID, dataRows):
-    global datafile_handlers, checksum_s_handlers
+    global datafile_handlers, checksum_h_handlers, checksum_s_handlers
     string_data = "\n".join(dataRows)
     data_handler = datafile_handlers.get(devID)
     if data_handler != None:
         data_handler.write(string_data + "\n")
-    checksum_handler = checksum_s_handlers.get(devID)
+        data_handler.flush()
+    checksum_handler = checksum_h_handlers.get(devID)
     if checksum_handler != None:
         # filename,YYYYMMDDhh,position,count,checksum
         count = len(dataRows)
@@ -124,8 +139,8 @@ def write_to_file(values):
     f.flush()
     f.close()
 
-# Get the latest filename
-def getLatestFilename(devID):
+# Get the latest data file path
+def getLatestDataFilepath(devID):
     #list_files = os.listdir(file_path)
     #list_datafiles = []
     #for f in list_files:
@@ -135,10 +150,33 @@ def getLatestFilename(devID):
     list_files = glob.glob(file_path + devID + "*")
     list_datafiles = sorted(list_files, reverse=True)
     if len(list_datafiles) > 0:
-        return os.path.basename(list_datafiles[0])
+        return list_datafiles[0]
+    #raise Exception()
+    return None
 
+# Get the latest data filename
+def getLatestDataFilename(devID):
+    return os.path.basename(getLatestDataFilepath(devID))
+
+# Get the latest checksum file path
+def getLatestChecksumFilepath(devID, isHour=True):
+    checksum_type = "hour"
+    if not isHour:
+        checksum_type = "sec"
+    list_files = glob.glob(checksum_file_path + devID + "*" + checksum_type + "*")
+    list_checksumfiles = sorted(list_files, reverse=True)
+    if len(list_checksumfiles) > 0:
+        return list_checksumfiles[0]
+    #raise Exception()
+    return None
+
+# Get the latest checksum filename
+def getLatestChecksumFilename(devID):
+    return os.path.basename(getLatestChecksumFilepath(devID))
+
+#
 def getLatestDatetime(devID):
-    filename = getLatestFilename(devID)
+    filename = getLatestDataFilename(devID)
     return filename.replace(devID + "_", "").replace(".csv", "")
 
 #
@@ -153,8 +191,38 @@ def readFromFile(filename, start_line, count_line):
     else:
         print "The file " + filename + " cannot be found."
 
+# get the checksum value in the previous hour
+def getLatestChecksumLine(devID, timeStr):
+    global checksum_h_handlers
+    checksum_handler = checksum_h_handlers.get(devID)
+    # print checksum_handler
+    return tailFile(checksum_handler, 1)[0]
+
+# Reads a n lines from f with an offset of offset lines.
+def tailFile(f, n, offset=0):
+    avg_line_length = CHECKSUM_AVG_LINE_LENGTH
+    to_read = n + offset
+    while 1:
+        try:
+            f.seek(-(avg_line_length * to_read), 2)
+        except IOError:
+            f.seek(0)
+        pos = f.tell()
+        lines = f.read().splitlines()
+        if len(lines) >= to_read or pos == 0:
+            return lines[-to_read:offset and -offset or None]
+        avg_line_length *= 1.3
+
+# Get the number of lines in a file
+def fileLen(fname):
+    i = 0
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
+
 if __name__ == "__main__":
-    devs = ["00aabbccddee", "AHJK"]
+    devs = ["00aabbccddee", "00aabbccddef"]
     init(None, devs)
     createFiles()
     arr = []
@@ -167,6 +235,8 @@ if __name__ == "__main__":
     allData[devs[1]] = ["20160921150505123456,123.456", "20160921150505654321,654.321"]
     #writeToFile("ABCD", dataRows)
     writeToFiles(allData)
-    print getLatestFilename(devs[0])
+    print getLatestDataFilename(devs[0])
     print datetime.datetime.fromtimestamp(float(getLatestDatetime(devs[0])))
-    print readFromFile("ABCD_1474965308.csv", 10, 10)
+    #print readFromFile("ABCD_1474965308.csv", 10, 10)
+    syncInit("time_str")
+    print getLatestChecksumLine("00aabbccddee", "timeStr")

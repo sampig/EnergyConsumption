@@ -96,7 +96,7 @@ transmit_thread.start()
 '''
 
 print "Client Main: Start data synchronization..."
-sync_thread = threading.Thread(target = sync_client.startSync, args = [])
+#sync_thread = threading.Thread(target = sync_client.startSync, args = [])
 #sync_thread.daemon = True
-sync_thread.start()
+#sync_thread.start()
 
