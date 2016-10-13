@@ -11,7 +11,7 @@ import sys
 
 import data_generator
 import data_transmitter
-import sync_client
+#import sync_client
 
 
 '''
@@ -43,7 +43,7 @@ def sigint_handler(signum, frame):
     # write data into file
     # flushData()
     data_transmitter.stopTransmission()
-    sync_client.stopSync()
+    #sync_client.stopSync()
     try:
         data_generator.stopDataGeneration()
     except:

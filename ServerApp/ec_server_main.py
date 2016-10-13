@@ -9,7 +9,7 @@ import sys
 import threading
 
 import data_receiver
-import sync_server
+#import sync_server
 
 '''
 ##########################################################################

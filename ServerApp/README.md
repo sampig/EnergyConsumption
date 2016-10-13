@@ -36,7 +36,7 @@ CREATE TABLE ec_consumption
 ec_date text, ec_time text, start_us text, end_us text, 
 ec_consumption_values text, 
 values_count int, values_checksum text, 
-insert_date text, 
+insert_time timeuuid, 
 PRIMARY KEY ((device_id), ec_date, ec_time, start_us, end_us)) ;
 
 -- create table: ec_checksum

@@ -8,6 +8,7 @@ import os
 import time
 import itertools
 import datetime
+import struct
 
 from ecclient.conf import properties_reader
 from fileinput import filename
@@ -96,18 +97,22 @@ def syncInit(timeStr):
             
 
 # Write to the files corresponded to the device
-def writeToFile(devID, dataRows):
+def writeToFile(devID, dataArr):
     global datafile_handlers, checksum_h_handlers, checksum_s_handlers
-    string_data = "\n".join(dataRows)
+    string_data = "\n".join(dataArr)
     data_handler = datafile_handlers.get(devID)
     if data_handler != None:
-        data_handler.write(string_data + "\n")
-        data_handler.flush()
+        for row in dataArr:
+            a = row.split(",")
+            data_handler.write(struct.pack('d', float(a[0])))
+            data_handler.write(struct.pack('f', float(a[1])))
+        #data_handler.write(string_data + "\n")
+    data_handler.flush()
     checksum_handler = checksum_h_handlers.get(devID)
     if checksum_handler != None:
         # filename,YYYYMMDDhh,position,count,checksum
-        count = len(dataRows)
-        string_checksum = os.path.basename(data_handler.name) + "," + dataRows[0][0:12] + "," + str(positions[devID]) + "," + str(count) + "," + checksum_util.getMD5(string_data)
+        count = len(dataArr)
+        string_checksum = os.path.basename(data_handler.name) + "," + dataArr[0][0:12] + "," + str(positions[devID]) + "," + str(count) + "," + checksum_util.getMD5(string_data)
         checksum_handler.write(string_checksum + "\n")
         checksum_handler.flush()
         positions[devID] += count

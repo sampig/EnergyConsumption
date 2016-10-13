@@ -55,10 +55,10 @@ def sendData(dev_id, time_str, data_arr, start_pos):
 ''' write data into file'''
 def writeData(dev_id, time_str, data_list):
     data_rows = []
-    time_second = time_str[0:14]
+    time_second = int(time.mktime(time.strptime(time_str[0:14], "%Y%m%d%H%M%S")))
     for t in sorted(data_list.keys()):
         for d in data_list[t]:
-            data_rows.append(time_second + d)
+            data_rows.append(str(time_second) + "." + d)
     print "writing into file..." + str(len(data_rows))
     file_util.writeToFile(dev_id, data_rows)
 
@@ -73,6 +73,7 @@ def transmitData():
     # num_devices = len(mac_addresses)
     # save_freq = properties_reader.getSaveFrequency()
 
+    flag_write = 10
     total_values = {}
     time_marks = {}
     time_us_check = {}  # for sending
@@ -87,7 +88,7 @@ def transmitData():
         time_marks[str(key)] = []
         time_us_check[str(key)] = us_str[0:17]
         time_s_check[str(key)] = None
-        time_hour_check[str(key)] = us_str[0:10]  #
+        time_hour_check[str(key)] = us_str[0:flag_write]  #
         start_pos[str(key)] = 0
     time_values = {}
 
@@ -132,7 +133,7 @@ def transmitData():
                     time_values = total_values[m]
     
                     us_str = now.strftime("%Y%m%d%H%M%S%f")  # timestamp
-                    h_check = us_str[0:10]  # YYYYMMDDhh
+                    h_check = us_str[0:flag_write]  # YYYYMMDDhh
                     second = us_str[0:14]  # YYYYMMDDhhmiss
                     us_check = us_str[0:17]
     
@@ -146,6 +147,7 @@ def transmitData():
                         time_us_check[m] = us_check
                         time_s_check[m] = second
                         start_pos[m] = 0
+                        # reset
                         total_values[m] = {}
                         time_values = total_values[m]
                         time_values[second] = []
@@ -166,7 +168,7 @@ def transmitData():
                         start_pos[m] = len(time_values[time_us_check[m][0:14]])
     
                     # v = str(int(binascii.hexlify(dataC[0]), 16) + int(binascii.hexlify(dataC[1]), 16) / 10000.0)
-                    value = us_str[14:20] + ",1234.567"  # SSSSSS,value
+                    value = us_str[14:20] + "," + str(1234.567 + int(us_str[18:20]))  # SSSSSS,value
     
                     time_values[second].append(value)
     
@@ -182,7 +184,8 @@ def transmitData():
             else:
                 continue
         except:
-            print "Unexpected error:", sys.exc_info()[0]
+            print "Transmitter: unexpected error:", sys.exc_info()[0]
+            print sys.exc_info(), "\n"
             continue
 
 
