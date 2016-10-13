@@ -23,6 +23,7 @@ datetime_str = None
 now = datetime.datetime.now()
 last = now - datetime.timedelta(hours=1)
 
+c_hour = 0
 count_hour = 0
 count_minute = {}
 count_second = {}
@@ -57,6 +58,7 @@ for row in rows:
     m = int(row.ec_time[2:4])
     c = row.values_count
     if h == hour_str:
+        c_hour += 1
         count_hour += c
         count_minute[m] += c
     #if int(h) > int(hour_str):
@@ -65,7 +67,7 @@ for row in rows:
 
 print "Testing\ncheck result:"
 print "The device <" + device_id + ">"
-print "has received <" + str(count_hour) + "> data in",
+print "has received <" + str(count_hour) + ">(" + str(c_hour) + ") data in",
 print "<" + date_str + hour_str + ">."
 print "The details:\n", count_minute
 
