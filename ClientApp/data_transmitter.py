@@ -135,7 +135,7 @@ def transmitData():
                 if portdata[1] == 17878:  # in dst_ports:  #
     
                     now = datetime.datetime.now()
-                    now_t = time.time() * 1000.0
+                    now_t = time.time()
                     ethH = struct.unpack("!6s6s2s", ethHeader)
                     ethdata = processEth(ethH)
                     # dataC = struct.unpack("!3s2s", data)
