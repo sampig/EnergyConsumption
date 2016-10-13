@@ -10,6 +10,7 @@ import binascii
 import datetime
 import threading
 import sys
+import traceback
 
 # from ecclient.conf import properties_reader
 from ecclient.utils import devices_reader, file_util, sip_config
@@ -66,6 +67,7 @@ def writeData(dev_id, time_str, data_list):
 def writeData2(dev_id, data_arr):
     print "writing into file..." + dev_id + ", " + str(len(data_arr))
     file_util.writeToFile(dev_id, data_arr)
+    flushData(dev_id)
     
 ''' '''
 def flushData(dev_id):
@@ -88,6 +90,7 @@ def transmitData():
     time_marks = {}
     time_us_check = {}  # for sending
     time_s_check = {}
+    time_min_check = {}
     time_hour_check = {}  # for writing
     start_pos = {}
     now = datetime.datetime.now()
@@ -99,6 +102,7 @@ def transmitData():
         time_marks[str(key)] = []
         time_us_check[str(key)] = us_str[0:17]
         time_s_check[str(key)] = None
+        time_min_check[str(key)] = us_str[10:12]
         time_hour_check[str(key)] = us_str[0:flag_write]  #
         start_pos[str(key)] = 0
     time_values = {}
@@ -137,6 +141,8 @@ def transmitData():
                     # dataC = struct.unpack("!3s2s", data)
     
                     m = ethdata[0]  # mac - dev_id
+                    if m == "000000000000":
+                        continue
                     # if m not in mac_addresses:
                     #    continue
                     #    mac_addresses.append(m)
@@ -149,7 +155,16 @@ def transmitData():
                     min_check = us_str[10:12]
                     second = us_str[0:14]  # YYYYMMDDhhmiss
                     us_check = us_str[0:17]
-    
+
+                    if time_min_check[m] != min_check and int(min_check) % 5 == 0:
+                        print min_check, time_min_check[m], len(t_values[m])
+                        t = threading.Thread(target=writeData2, args=(m, t_values[m]))
+                        t.start()
+                        t_values[m] = []
+                        time_min_check[m] = min_check
+                    v = str(now_t) + "," + str(1234.567 + int(us_str[18:20]))
+                    t_values[m].append(v)
+                    
                     if time_hour_check[m] != h_check:
                         # start a thread to write data
                         # writeData(m, us_str, time_values)
@@ -165,9 +180,6 @@ def transmitData():
                         total_values[m] = {}
                         time_values = total_values[m]
                         time_values[second] = []
-                    elif int(min_check) % 10 == 0:
-                        t = threading.Thread(target=writeData2, args=(m, t_values[m]))
-                        t_values[m] = []
                     elif time_s_check[m] != second:  # second not in time_marks[m]:
                         # save data to next second
                         # time_marks[m].append(second)
@@ -188,9 +200,6 @@ def transmitData():
                     value = us_str[14:20] + "," + str(1234.567 + int(us_str[18:20]))  # SSSSSS,value
     
                     time_values[second].append(value)
-                    
-                    v = str(now_t) + "," + str(1234.567 + int(us_str[18:20]))
-                    t_values[m].append(v)
     
                     # print "From Smac(" + ethdata[0] + ") Sip(" + ipdata[0] + ":" + str(portdata[0]) + ") to Dmac(" + ethdata[1] + ") Dip(" + ipdata[1] + ":" + str(portdata[1]) + ")"
                     # print str(len(data)) + " data:" + str(value)
@@ -205,7 +214,7 @@ def transmitData():
                 continue
         except:
             print "Transmitter: unexpected error:", sys.exc_info()[0]
-            print sys.exc_info(), "\n"
+            traceback.print_exc()
             continue
 
 

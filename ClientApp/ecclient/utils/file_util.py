@@ -61,7 +61,7 @@ def createFiles():
             filepath = file_path + filename
             if os.path.isfile(filepath) and os.access(filepath, os.R_OK):
                 print "File exists."
-                obj = open(filepath, "a+")
+                obj = open(filepath, "ab+")
                 datafile_handlers[devID] = obj
             else:
                 obj = open(filepath, "ab")
@@ -76,7 +76,7 @@ def createFiles():
                 obj = open(checksum_s_filepath, "ab")
                 checksum_s_handlers[devID] = obj
             if os.path.isfile(checksum_h_filepath) and os.access(checksum_h_filepath, os.R_OK):
-                obj = open(checksum_h_filepath, "a+")
+                obj = open(checksum_h_filepath, "ab+")
                 checksum_h_handlers[devID] = obj
             else:
                 obj = open(checksum_h_filepath, "ab")
@@ -100,7 +100,7 @@ def syncInit(timeStr):
 # Write to the files corresponded to the device
 def writeToFile(devID, dataArr):
     global datafile_handlers, checksum_h_handlers, checksum_s_handlers
-    string_data = "\n".join(dataArr)
+    #string_data = "\n".join(dataArr)
     data_handler = datafile_handlers.get(devID)
     if data_handler != None:
         for row in dataArr:
@@ -109,6 +109,8 @@ def writeToFile(devID, dataArr):
             data_handler.write(struct.pack('f', float(a[1])))
         #data_handler.write(string_data + "\n")
     #data_handler.flush()
+    return
+    '''
     checksum_handler = checksum_h_handlers.get(devID)
     if checksum_handler != None:
         # filename,YYYYMMDDhh,position,count,checksum
@@ -118,6 +120,7 @@ def writeToFile(devID, dataArr):
         checksum_handler.flush()
         positions[devID] += count
         # print "writing: " + str(checksum_handler) + string_checksum
+    '''
 
 # Write to multiple files.
 def writeToFiles(allData):
