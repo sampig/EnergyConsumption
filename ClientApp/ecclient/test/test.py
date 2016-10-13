@@ -56,6 +56,8 @@ for line in file_handler:
 
 while True:
     b = file_handler.read(DATA_SIZE)
+    if len(b) < 12:
+        break
     if b:
         t = "{:f}".format(struct.unpack("d", b[0:8])[0])
         v = struct.unpack("f", b[8:])[0]
