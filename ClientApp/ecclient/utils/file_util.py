@@ -14,7 +14,7 @@ from ecclient.conf import properties_reader
 from fileinput import filename
 from ecclient.utils import checksum_util
 
-FILE_BUFFER_SIZE = 2000000000 # for testing
+FILE_BUFFER_SIZE = 1000000000 # for testing
 # max signed int: 2^31 -1 = 2147483647
 # data in 1 hour: 12 * 44000 * 60 * 60 = 1900800000
 # 1GB = 1073741824 = 1024 * 1024 * 1024
@@ -108,7 +108,7 @@ def writeToFile(devID, dataArr):
             data_handler.write(struct.pack('d', float(a[0])))
             data_handler.write(struct.pack('f', float(a[1])))
         #data_handler.write(string_data + "\n")
-    data_handler.flush()
+    #data_handler.flush()
     checksum_handler = checksum_h_handlers.get(devID)
     if checksum_handler != None:
         # filename,YYYYMMDDhh,position,count,checksum
@@ -125,6 +125,17 @@ def writeToFiles(allData):
     for devID in dev_ids:
         dataRows = allData.get(devID)
         writeToFile(devID, dataRows)
+
+#
+def flush(devID):
+    global datafile_handlers, checksum_h_handlers, checksum_s_handlers
+    data_handler = datafile_handlers.get(devID)
+    if data_handler != None:
+        data_handler.flush()
+    checksum_handler = checksum_h_handlers.get(devID)
+    if checksum_handler != None:
+        checksum_handler.flush()
+    
 
 # create a single file
 def createFile(devID):

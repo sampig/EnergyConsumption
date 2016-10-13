@@ -59,8 +59,17 @@ def writeData(dev_id, time_str, data_list):
     for t in sorted(data_list.keys()):
         for d in data_list[t]:
             data_rows.append(str(time_second) + "." + d)
-    print "writing into file..." + str(len(data_rows))
+    print "writing into file..." + dev_id + ", " + str(len(data_rows))
     file_util.writeToFile(dev_id, data_rows)
+
+''' '''
+def writeData2(dev_id, data_arr):
+    print "writing into file..." + dev_id + ", " + str(len(data_arr))
+    file_util.writeToFile(dev_id, data_arr)
+    
+''' '''
+def flushData(dev_id):
+    file_util.flush(dev_id)
 
 def transmitData():
 
@@ -74,6 +83,7 @@ def transmitData():
     # save_freq = properties_reader.getSaveFrequency()
 
     flag_write = 10
+    t_values = {}
     total_values = {}
     time_marks = {}
     time_us_check = {}  # for sending
@@ -85,6 +95,7 @@ def transmitData():
     # pre-load devices (To be REMOVED)
     for key in mac_addresses:
         total_values[str(key)] = {}
+        t_values[str(key)] = []
         time_marks[str(key)] = []
         time_us_check[str(key)] = us_str[0:17]
         time_s_check[str(key)] = None
@@ -120,6 +131,7 @@ def transmitData():
                 if portdata[1] == 17878:  # in dst_ports:  #
     
                     now = datetime.datetime.now()
+                    now_t = time.time() * 1000.0
                     ethH = struct.unpack("!6s6s2s", ethHeader)
                     ethdata = processEth(ethH)
                     # dataC = struct.unpack("!3s2s", data)
@@ -134,6 +146,7 @@ def transmitData():
     
                     us_str = now.strftime("%Y%m%d%H%M%S%f")  # timestamp
                     h_check = us_str[0:flag_write]  # YYYYMMDDhh
+                    min_check = us_str[10:12]
                     second = us_str[0:14]  # YYYYMMDDhhmiss
                     us_check = us_str[0:17]
     
@@ -141,7 +154,8 @@ def transmitData():
                         # start a thread to write data
                         # writeData(m, us_str, time_values)
                         sendData(m, us_str, time_values[time_us_check[m][0:14]], start_pos[m])
-                        t = threading.Thread(target=writeData, args=(m, us_str, time_values))
+                        #t = threading.Thread(target=writeData, args=(m, us_str, time_values))
+                        t = threading.Thread(target=flushData, args=(m))
                         t.start()
                         time_hour_check[m] = h_check
                         time_us_check[m] = us_check
@@ -151,6 +165,9 @@ def transmitData():
                         total_values[m] = {}
                         time_values = total_values[m]
                         time_values[second] = []
+                    elif int(min_check) % 10 == 0:
+                        t = threading.Thread(target=writeData2, args=(m, t_values[m]))
+                        t_values[m] = []
                     elif time_s_check[m] != second:  # second not in time_marks[m]:
                         # save data to next second
                         # time_marks[m].append(second)
@@ -171,6 +188,9 @@ def transmitData():
                     value = us_str[14:20] + "," + str(1234.567 + int(us_str[18:20]))  # SSSSSS,value
     
                     time_values[second].append(value)
+                    
+                    v = str(now_t) + "," + str(1234.567 + int(us_str[18:20]))
+                    t_values[m].append(v)
     
                     # print "From Smac(" + ethdata[0] + ") Sip(" + ipdata[0] + ":" + str(portdata[0]) + ") to Dmac(" + ethdata[1] + ") Dip(" + ipdata[1] + ":" + str(portdata[1]) + ")"
                     # print str(len(data)) + " data:" + str(value)
