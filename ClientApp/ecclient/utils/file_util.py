@@ -14,9 +14,10 @@ from ecclient.conf import properties_reader
 from fileinput import filename
 from ecclient.utils import checksum_util
 
-FILE_BUFFER_SIZE = 100000000 # for testing
+FILE_BUFFER_SIZE = 2000000000 # for testing
 # max signed int: 2^31 -1 = 2147483647
-# data in 1 hour: 30 * 44000 * 60 * 60 = 4752000000
+# data in 1 hour: 12 * 44000 * 60 * 60 = 1900800000
+# 1GB = 1073741824 = 1024 * 1024 * 1024
 
 CHECKSUM_AVG_LINE_LENGTH = 100 
 

@@ -21,6 +21,7 @@ args = parser.parse_args()
 device_id = None
 datetime_str = None
 now = datetime.datetime.now()
+last = now - datetime.timedelta(hours=1)
 
 count_hour = 0
 count_minute = {}
@@ -36,7 +37,7 @@ if args.devid is not None:
 if args.datetime is not None and len(args.datetime) > 10:
     datetime_str = args.datetime
 else:
-    datetime_str = now.strftime("%Y%m%d%H%M%S")
+    datetime_str = last.strftime("%Y%m%d%H%M%S")
 
 date_str = datetime_str[0:8]
 hour_str = datetime_str[8:10]
