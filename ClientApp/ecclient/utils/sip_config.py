@@ -135,6 +135,16 @@ if __name__ == "__main__":
         else:
             buddy.send_pager(msg)
             print "Send " + str(len(arr)) + " to server." + str(len(msg))
+        arr = []
+        import struct
+        for i in xrange(0,350):
+            arr.append(struct.pack("i",123456) + struct.pack("f",1234.456))
+        msg = "aabbccddeeff|" + "20160909151515|" + ";".join(arr)
+        if msg == "":
+            buddy.send_typing_ind(False)
+        else:
+            buddy.send_pager(msg)
+            print "Send " + str(len(arr)) + " to server." + str(len(msg))
         # time.sleep(1/4400)
     disconnect()
 
