@@ -98,15 +98,21 @@ def syncInit(timeStr):
             
 
 # Write to the files corresponded to the device
-def writeToFile(devID, dataArr):
+def writeToFile(devID, dataArr, isBinary=True):
     global datafile_handlers, checksum_h_handlers, checksum_s_handlers
     #string_data = "\n".join(dataArr)
     data_handler = datafile_handlers.get(devID)
     if data_handler != None:
-        for row in dataArr:
-            a = row.split(",")
-            data_handler.write(struct.pack('d', float(a[0])))
-            data_handler.write(struct.pack('f', float(a[1])))
+        if isBinary:
+            for row in dataArr:
+                data_handler.write(row)
+                data_handler.write("\n")
+        else:
+            for row in dataArr:
+                a = row.split(",")
+                data_handler.write(struct.pack('d', float(a[0])))
+                data_handler.write(struct.pack('f', float(a[1])))
+                data_handler.write("\n")
         #data_handler.write(string_data + "\n")
     #data_handler.flush()
     return

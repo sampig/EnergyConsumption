@@ -85,7 +85,7 @@ else:
 '''
 
 print "Client Main: Start transmitting data..."
-transmit_thread = threading.Thread(target=data_transmitter.transmitData, args=[])
+transmit_thread = threading.Thread(target=data_transmitter.transmitDataSingleSource, args=[])
 #transmit_thread.daemon = True
 transmit_thread.start()
 
