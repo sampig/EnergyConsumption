@@ -7,6 +7,7 @@ import time
 import threading
 import sys
 import pjsua
+import datetime
 
 from ecserver.conf import properties_reader
 from ecserver.utils import sip_config, cassandra_util
@@ -44,10 +45,16 @@ class ClientCallback(sip_config.MyBuddyCallback):
         global db_manager
         arr = body.split("|")
         dev_id = arr[0]
-        time_str = arr[1]
-        data_str = arr[2]  # .split(";")
+        time_str = datetime.datetime.fromtimestamp(float(arr[1])).strftime("%Y%m%d%H%M%S")
+        startus = arr[2]
+        endus = arr[3]
+        count = int(arr[4])
+        data_str = "" #arr[5]  # .split(";")
+        l = len(arr)
+        if l > 6:
+            print "length: ", str(l)
         # print "receive: " + dev_id + "|" + time_str  # + ":" + str(len(data_arr))
-        db_manager.insertConsumptionRaw(dev_id, time_str, data_str, ";")
+        db_manager.insertConsumptionRaw(dev_id, time_str, data_str, count, startus, endus, ";")
         return body
 
 def serverListening():
