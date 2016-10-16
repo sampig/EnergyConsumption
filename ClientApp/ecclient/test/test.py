@@ -17,7 +17,7 @@ parser.add_argument('-d', '--datetime', action="store", metavar='time(YYYYMMDDhh
 
 args = parser.parse_args()
 
-DATA_SIZE = 12 #13
+DATA_SIZE = 13 #13
 
 file_handler = None
 datetime_str = None
@@ -56,11 +56,11 @@ for line in file_handler:
 
 while True:
     b = file_handler.read(DATA_SIZE)
-    if len(b) < 12:
+    if len(b) < 13:
         break
     if b:
         t = "{:f}".format(struct.unpack("d", b[0:8])[0])
-        v = struct.unpack("f", b[8:])[0]
+        v = struct.unpack("f", b[8:12])[0]
         dt = datetime.datetime.fromtimestamp(struct.unpack("d", b[0:8])[0])
         dt_str = dt.strftime("%Y%m%d%H%M%S")
         h = dt_str[0:10]
