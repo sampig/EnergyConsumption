@@ -4,6 +4,7 @@
 #
 
 import datetime
+import struct
 
 from cassandra.cluster import Cluster
 
@@ -51,17 +52,31 @@ class CassandraManager():
                                       " VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())")
         session.execute(insert_stmt, row_data.getRowData())
 
-    def insertConsumptionRaw(self, device_id, timestamp, values, count=0, startus=0, endus=0, delimiter="\n"):
+    def insertConsumptionRaw(self, device_id, timestamp, values, delimiter="\n"):  # count=0, startus=0, endus=0,
         session = self.connection.getSession()
         ec_date = timestamp[0:8]
         ec_time = timestamp[8:14]
         if (values is not None):
-            ec_values = values
+            # ec_values = values
             # arr_value = values.split(delimiter)
-            values_count = int(count)  # len(arr_value)
+            l = len(values)
+            values_count = (l + 1) / 9  # len(arr_value)  # int(count) #
             values_checksum = None  # checksum_util.getArrayMD5(values)
-            start_us = startus  # arr_value[0][0:6]
-            end_us = endus  # arr_value[len(arr_value) - 1][0:6]
+            start_us = str(struct.unpack("i", values[0:4])[0])  # "{:06d}".format(
+            ec_values = start_us + "," + "{:.3f}".format(struct.unpack("f", values[4:8])[0])
+            end_us = str(struct.unpack("i", values[(l - 8):(l - 4)])[0])
+            if l <= 9:
+                pass
+            else:
+                ec_values += ";"
+                pos = 9
+                data_size = 9
+                while True:
+                    if pos >= l - 9:
+                        ec_values += end_us + "," + "{:.3f}".format(struct.unpack("f", values[(l - 4):])[0])
+                        break
+                    ec_values += str(struct.unpack("i", values[pos:pos + 4])[0]) + "," + "{:.3f}".format(struct.unpack("f", values[pos + 4:pos + 8])[0]) + ";"
+                    pos += data_size
         else:
             return
         # print "inserting raw: ", device_id, timestamp, count

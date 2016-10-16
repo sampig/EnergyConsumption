@@ -51,11 +51,12 @@ def sendData(dev_id, time_str, data_arr, start_pos):
     l = len(data_arr)
     if l <= 0:
         return
-    startus = struct.unpack("h", data_arr[0][0:2])[0]
-    endus = struct.unpack("h", data_arr[l-1][0:2])[0]
-    msg_str = dev_id + "|" + str(time_str) + "|" + str(startus) + "|" + str(endus) + "|" + str(l) + "|" + str(";".join(data_arr))
+    # startus = struct.unpack("i", data_arr[0][0:4])[0]
+    # endus = struct.unpack("i", data_arr[l - 1][0:4])[0]
+    # msg_str = dev_id + "|" + str(time_str) + "|" + str(startus) + "|" + str(endus) + "|" + str(l) + "|" + str(";".join(data_arr))
+    msg_str = dev_id + "|" + str(time_str) + "|" + str(";".join(data_arr))
     # data format: dev_id|YYYYMMDDhhmissSSSSSS|SSSSSS,value;SSSSSS,value;...
-    # print "Transmitter: sending " + str(len(data_arr[start_pos:])) + " packets of " + dev_id + " to server..." + str(start_pos)
+    # print "Transmitter: sending " + str(len(data_arr)) + " packets of " + dev_id + " to server..." + str(start_pos)
     buddy.send_pager(msg_str)
 
 ''' write data into file'''
@@ -73,8 +74,8 @@ def writeData2(dev_id, data_list):
     data_rows = []
     for t in sorted(data_list.keys()):
         for d in data_list[t]:
-            us = struct.unpack("h", d[0:2])[0]
-            data_rows.append(struct.pack("d", (int(t) + us / 1000000.0)) + d[2:])
+            us = struct.unpack("i", d[0:4])[0]
+            data_rows.append(struct.pack("d", (int(t) + us / 1000000.0)) + d[4:])
     print "Transmitter: writing into file..." + dev_id + ", " + str(len(data_rows))
     file_util.writeToFile(dev_id, data_rows, True)
     flushData(dev_id)
@@ -256,13 +257,15 @@ def transmitDataSingleSource():
     # us_str = now.strftime("%Y%m%d%H%M%S%f")
 
     # flag_write = 10
-    freq_write_min = 1 * 60  #
-    flag_ms_check = 100
-    flag_us_stamp = 10000
+    freq_write_min = 30 * 60  #
+    # flag_ms_check = 100
+    num_data = 300
+    flag_us_stamp = 1000000
     values_total = {}
     values_second = []
-    time_ms_check = int((now_time % 1) * flag_ms_check)  # for sending
+    # time_ms_check = int((now_time % 1) * flag_ms_check)  # for sending
     time_s_check = int(now_time)
+    counter = 0
     start_pos = 0
 
     sock = socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.htons(0x800))
@@ -295,26 +298,26 @@ def transmitDataSingleSource():
                     if m != mac_address:
                         continue
 
-                    now_time = time.time()
-                    ms_check = int((now_t % 1) * flag_ms_check)
+                    # ms_check = int((now_t % 1) * flag_ms_check)
                     s_check = int(now_t)
                     us = int((now_t % 1) * 1000000) % flag_us_stamp
 
-                    if time_ms_check != ms_check:
-                        sendData(m, time_ms_check, values_second[start_pos:], start_pos)
+                    counter += 1
+
+                    if counter % num_data == 0 or time_s_check != s_check:
+                        sendData(m, time_s_check, values_second[start_pos:], start_pos)
                         if time_s_check != s_check:
                             if s_check % freq_write_min == 0:
                                 t = threading.Thread(target=writeData2, args=(m, values_total))
                                 t.start()
-                                time.sleep(30)
                                 values_total = {}
                             values_total[s_check] = values_second
                             time_s_check = s_check
                             values_second = []
+                            counter = 0
                         start_pos = len(values_second)
-                        time_ms_check = ms_check
 
-                    v = struct.pack("h", us) + struct.pack("f", (1234.456 + us / 100))
+                    v = struct.pack("i", us) + struct.pack("f", (1234.456 + int(us / 100)))
                     values_second.append(v)
 
             else:

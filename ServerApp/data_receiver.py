@@ -43,18 +43,20 @@ class ClientCallback(sip_config.MyBuddyCallback):
 
     def handleData(self, body):
         global db_manager
-        arr = body.split("|")
-        dev_id = arr[0]
-        time_str = datetime.datetime.fromtimestamp(float(arr[1])).strftime("%Y%m%d%H%M%S")
-        startus = arr[2]
-        endus = arr[3]
-        count = int(arr[4])
-        data_str = "" #arr[5]  # .split(";")
-        l = len(arr)
-        if l > 6:
-            print "length: ", str(l)
-        # print "receive: " + dev_id + "|" + time_str  # + ":" + str(len(data_arr))
-        db_manager.insertConsumptionRaw(dev_id, time_str, data_str, count, startus, endus, ";")
+        first = body.index("|")
+        second = body.index("|", first + 1)
+        dev_id = body[0:first]
+        time_str = datetime.datetime.fromtimestamp(float(body[(first + 1):second])).strftime("%Y%m%d%H%M%S")
+        data_str = body[(second + 1):]
+        # arr = body.split("|")
+        # data_arr = arr[2].split(";")
+        # count = len(data_arr)
+        # startus = arr[2]
+        # endus = arr[3]
+        # count = int(arr[4])
+        # data_str = arr[2]
+        # print "receive: " + dev_id + "|" + time_str  # + "|" + data_str # + ":" + str(count)
+        db_manager.insertConsumptionRaw(dev_id, time_str, data_str, ";")
         return body
 
 def serverListening():
