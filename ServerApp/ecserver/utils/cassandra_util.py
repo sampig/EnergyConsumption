@@ -57,26 +57,26 @@ class CassandraManager():
         ec_date = timestamp[0:8]
         ec_time = timestamp[8:14]
         if (values is not None):
-            # ec_values = values
+            ec_values = values
             # arr_value = values.split(delimiter)
             l = len(values)
             values_count = (l + 1) / 9  # len(arr_value)  # int(count) #
             values_checksum = None  # checksum_util.getArrayMD5(values)
             start_us = str(struct.unpack("i", values[0:4])[0])  # "{:06d}".format(
-            ec_values = start_us + "," + "{:.3f}".format(struct.unpack("f", values[4:8])[0])
+            # ec_values = start_us + "," + "{:.3f}".format(struct.unpack("f", values[4:8])[0])
             end_us = str(struct.unpack("i", values[(l - 8):(l - 4)])[0])
-            if l <= 9:
-                pass
-            else:
-                ec_values += ";"
-                pos = 9
-                data_size = 9
-                while True:
-                    if pos >= l - 9:
-                        ec_values += end_us + "," + "{:.3f}".format(struct.unpack("f", values[(l - 4):])[0])
-                        break
-                    ec_values += str(struct.unpack("i", values[pos:pos + 4])[0]) + "," + "{:.3f}".format(struct.unpack("f", values[pos + 4:pos + 8])[0]) + ";"
-                    pos += data_size
+            # if l <= 9:
+            #    pass
+            # else:
+            #    ec_values += ";"
+            #    pos = 9
+            #    data_size = 9
+            #    while True:
+            #        if pos >= l - 9:
+            #            ec_values += end_us + "," + "{:.3f}".format(struct.unpack("f", values[(l - 4):])[0])
+            #            break
+            #        ec_values += str(struct.unpack("i", values[pos:pos + 4])[0]) + "," + "{:.3f}".format(struct.unpack("f", values[pos + 4:pos + 8])[0]) + ";"
+            #        pos += data_size
         else:
             return
         # print "inserting raw: ", device_id, timestamp, count
