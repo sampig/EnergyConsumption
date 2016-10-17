@@ -27,22 +27,33 @@ Table of contents
 Create some tables:
 
 ``` sql
--- ec_consumption
+-- create keyspace
+CREATE KEYSPACE mykeyspace WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
+
+-- create table: ec_consumption
 CREATE TABLE ec_consumption 
 (device_id text, 
 ec_date text, ec_time text, start_us text, end_us text, 
 ec_consumption_values text, 
 values_count int, values_checksum text, 
-insert_date text, 
+insert_time timeuuid, 
 PRIMARY KEY ((device_id), ec_date, ec_time, start_us, end_us)) ;
 
--- ec_checksum
+-- create table: ec_checksum
 CREATE TABLE ec_checksum 
 (device_id text, 
 ec_date text, ec_time text, 
 values_count int, values_checksum text, 
 check_time timeuuid, check_times int, 
 PRIMARY KEY ((device_id), ec_date, ec_time)) ;
+```
+
+### Python lib for Cassandra
+
+Install the Python library for Cassandra.
+
+``` shell
+pip install cassandra-driver
 ```
 
 ## Structure

@@ -117,24 +117,49 @@ if __name__ == "__main__":
         pass
     else:
         buddy.send_typing_ind(True)
+        #
         arr = []
+        time_second = str(1476612899)
         for i in xrange(0,200):
             arr.append("123456," + str(1234.456))
-        msg = "aabbccddeeff|" + "20160909151515|" + ";".join(arr)
+        msg = "aabbccddeeff|" + time_second + "|" + ";".join(arr)
         if msg == "":
             buddy.send_typing_ind(False)
         else:
             buddy.send_pager(msg)
             print "Send " + str(len(arr)) + " to server." + str(len(msg))
+        #
         arr = []
         for i in xrange(0,100):
             arr.append("20160909151515123456," + str(1234.456))
-        msg = "aabbccddeeff|" + "|;".join(arr)
+        msg = "aabbccddeeff|" + time_second + "|" + "|;".join(arr)
         if msg == "":
             buddy.send_typing_ind(False)
         else:
             buddy.send_pager(msg)
             print "Send " + str(len(arr)) + " to server." + str(len(msg))
+        #
+        arr = []
+        import struct
+        for i in xrange(0,500):
+            arr.append(struct.pack("h",9999) + struct.pack("f",1234.456))
+        msg = "aabbccddeeff|" + time_second + "|" + ";".join(arr)
+        if msg == "":
+            buddy.send_typing_ind(False)
+        else:
+            buddy.send_pager(msg)
+            print "Send " + str(len(arr)) + " to server." + str(len(msg))
+        #
+        arr = []
+        for i in xrange(0,350):
+            arr.append(struct.pack("i",999999) + struct.pack("f",1234.456))
+        d = ";".join(arr)
+        msg = "aabbccddeeff|" + time_second + "|" + d
+        if msg == "":
+            buddy.send_typing_ind(False)
+        else:
+            buddy.send_pager(msg)
+            print "Send " + str(len(arr)) + "|" + str((len(d) + 1)/9) + " to server." + str(len(msg))
         # time.sleep(1/4400)
     disconnect()
 

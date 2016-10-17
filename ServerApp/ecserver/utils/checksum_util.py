@@ -13,6 +13,6 @@ def getMD5(text):
     return hashlib.md5(text).hexdigest()
 
 # Get the MD5 value of an array
-def getArrayMD5(array):
-    text = "\n".join(array)
+def getArrayMD5(array, delimiter = "\n"):
+    text = delimiter.join(array)
     return getMD5(text)

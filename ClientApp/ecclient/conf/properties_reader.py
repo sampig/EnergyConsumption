@@ -12,7 +12,11 @@ configFile = os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.pr
 config.read(configFile)
 
 def getSaveFrequency():
-    freq = config.get("Transmit","transmit.savefreq")
+    freq = config.getint("Transmit","transmit.savefreq")
+    if freq <= 0:
+        freq = 30
+    if freq > 60:
+        freq = 60
     return freq
 
 def getSaveFilePath():

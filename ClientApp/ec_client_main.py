@@ -48,7 +48,7 @@ def sigint_handler(signum, frame):
         data_generator.stopDataGeneration()
     except:
         print "Generation has already stopped."
-    print 'Stop pressing the CTRL+C!'
+    print "Client Main: Stop pressing the CTRL+C!"
     sys.exit(1)
 
 signal.signal(signal.SIGINT, sigint_handler)
@@ -85,7 +85,7 @@ else:
 '''
 
 print "Client Main: Start transmitting data..."
-transmit_thread = threading.Thread(target=data_transmitter.transmitData, args=[])
+transmit_thread = threading.Thread(target=data_transmitter.transmitDataSingleSource, args=[])
 #transmit_thread.daemon = True
 transmit_thread.start()
 
@@ -96,7 +96,10 @@ transmit_thread.start()
 '''
 
 print "Client Main: Start data synchronization..."
-sync_thread = threading.Thread(target = sync_client.startSync, args = [])
+#sync_thread = threading.Thread(target = sync_client.startSync, args = [])
 #sync_thread.daemon = True
-sync_thread.start()
+#sync_thread.start()
+
+while True:
+    time.sleep(1000)
 

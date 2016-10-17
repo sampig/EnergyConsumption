@@ -36,12 +36,25 @@ Install Ostinato and the Python library for it.
 ``` shell
 sudo apt-get install ostinato
 
-pip install python-ostinato=0.7
+pip install python-ostinato
+pip install python-ostinato==0.7
+```
+
+If the version of ostinato is too old, try to install a new version. Go to [opensuse site](https://software.opensuse.org/download.html?project=home:pstavirs:ostinato&package=ostinato)
+
+``` shell
+sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/pstavirs:/ostinato/xUbuntu_15.04/ /' > /etc/apt/sources.list.d/ostinato.list"
+wget http://download.opensuse.org/repositories/home:pstavirs:ostinato/xUbuntu_15.04/Release.key
+sudo apt-key add - < Release.key
+sudo apt-get update
+sudo apt-get install ostinato
 ```
 
 ### PJSUA for Python Module
 
 ``` shell
+sudo apt install libasound2-dev
+
 svn co http://svn.pjsip.org/repos/pjproject/trunk pjproject
 ```
 
@@ -109,8 +122,17 @@ Configuration file is in ecclient/conf directory. Its format is:
 [key]=[values]
 ```
 
+
+## Testing
+
+```shell
+python test.py -f [filepath] -d [YYYYMMDDhh[miss]]
+```
+
+
 ## References
 
 [Ostinato](http://ostinato.org/)
+
 [PJSIP](http://www.pjsip.org/)
 

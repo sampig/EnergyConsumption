@@ -29,3 +29,8 @@ def getCassandraPort():
 def getCassandraKeyspace():
     keyspace = config.get("CassandraDB", "cassandra.keyspace")
     return keyspace
+
+def getSyncHost():
+    ip = config.get("Synchronization", "sync.ip")
+    port = config.getint("Synchronization", "sync.port")
+    return (ip, port)
