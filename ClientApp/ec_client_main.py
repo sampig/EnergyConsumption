@@ -11,7 +11,7 @@ import sys
 
 import data_generator
 import data_transmitter
-#import sync_client
+import sync_client
 
 
 '''
@@ -43,12 +43,12 @@ def sigint_handler(signum, frame):
     # write data into file
     # flushData()
     data_transmitter.stopTransmission()
-    #sync_client.stopSync()
+    sync_client.stopSync()
     try:
         data_generator.stopDataGeneration()
     except:
         print "Generation has already stopped."
-    print 'Stop pressing the CTRL+C!'
+    print "Client Main: Stop pressing the CTRL+C!"
     sys.exit(1)
 
 signal.signal(signal.SIGINT, sigint_handler)
@@ -99,4 +99,7 @@ print "Client Main: Start data synchronization..."
 #sync_thread = threading.Thread(target = sync_client.startSync, args = [])
 #sync_thread.daemon = True
 #sync_thread.start()
+
+while True:
+    time.sleep(1000)
 

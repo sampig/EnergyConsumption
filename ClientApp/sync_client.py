@@ -6,6 +6,7 @@
 import datetime
 import socket
 import time
+import sys
 
 from ecclient.conf import properties_reader
 from ecclient.utils import devices_reader, file_util
@@ -35,6 +36,7 @@ def __getLatestChecksumValue(devID, timeStr):
     return line
 
 def startSync():
+    global _running
     
     mac_addresses = devices_reader.getDevices()[0]
     
@@ -79,9 +81,12 @@ def startSync():
         else:
             time.sleep(SLEEP_TIME)
 
+''' Stop synchronization '''
 def stopSync():
-    _running = True
+    global _running
+    _running = False
     print "Stopping sync..."
+    sys.exit()
 
 if __name__ == "__main__":
     startSync()

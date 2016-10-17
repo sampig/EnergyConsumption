@@ -12,10 +12,12 @@ import threading
 import sys
 import traceback
 
-# from ecclient.conf import properties_reader
+from ecclient.conf import properties_reader
 from ecclient.utils import devices_reader, file_util, sip_config
 
 _running = True
+
+SAVE_FREQ_MIN = properties_reader.getSaveFrequency()
 
 ''' handle with packet header '''
 def processEth(data):
@@ -59,7 +61,7 @@ def sendData(dev_id, time_str, data_arr, start_pos):
     # print "Transmitter: sending " + str(len(data_arr)) + " packets of " + dev_id + " to server..." + str(start_pos)
     buddy.send_pager(msg_str)
 
-''' write data into file'''
+''' write data into file '''
 def writeData(dev_id, time_str, data_list):
     data_rows = []
     time_second = int(time.mktime(time.strptime(time_str[0:14], "%Y%m%d%H%M%S")))
@@ -69,8 +71,8 @@ def writeData(dev_id, time_str, data_list):
     print "Transmitter: writing into file..." + dev_id + ", " + str(len(data_rows))
     file_util.writeToFile(dev_id, data_rows, False)
 
-''' '''
-def writeData2(dev_id, data_list):
+''' write data (binary) into file '''
+def writeBinaryData(dev_id, data_list):
     data_rows = []
     for t in sorted(data_list.keys()):
         for d in data_list[t]:
@@ -84,7 +86,11 @@ def writeData2(dev_id, data_list):
 def flushData(dev_id):
     file_util.flush(dev_id)
 
+'''
+Transmit data from multiple sources
+'''
 def transmitData():
+    global _running
 
     mac_addresses = devices_reader.getDevices()[0]
 
@@ -170,7 +176,7 @@ def transmitData():
 
                     # if time_min_check[m] != min_check and int(min_check) % freq_min == 0:
                     #    print min_check, time_min_check[m], len(t_values[m])
-                    #    t = threading.Thread(target=writeData2, args=(m, t_values[m]))
+                    #    t = threading.Thread(target=writeBinaryData, args=(m, t_values[m]))
                     #    t.start()
                     #    t_values[m] = []
                     #    time_min_check[m] = min_check
@@ -240,7 +246,11 @@ def transmitData():
     #        values = time_values[k]
     #        print key + ", " + k + ": " + str(len(values))
 
+'''
+Transmit data from a single source
+'''
 def transmitDataSingleSource():
+    global _running
 
     mac_address = devices_reader.getDevices()[0][0]
 
@@ -257,7 +267,7 @@ def transmitDataSingleSource():
     # us_str = now.strftime("%Y%m%d%H%M%S%f")
 
     # flag_write = 10
-    freq_write_min = 30 * 60  #
+    freq_write_min = SAVE_FREQ_MIN * 60  #
     # flag_ms_check = 100
     num_data = 300
     flag_us_stamp = 1000000
@@ -308,7 +318,7 @@ def transmitDataSingleSource():
                         sendData(m, time_s_check, values_second[start_pos:], start_pos)
                         if time_s_check != s_check:
                             if s_check % freq_write_min == 0:
-                                t = threading.Thread(target=writeData2, args=(m, values_total))
+                                t = threading.Thread(target=writeBinaryData, args=(m, values_total))
                                 t.start()
                                 values_total = {}
                             values_total[s_check] = values_second
@@ -327,20 +337,12 @@ def transmitDataSingleSource():
             traceback.print_exc()
             break
 
-
-    # stopDataGeneration()
-
-    # print total_values.keys()
-
-    # for key in total_values.keys():
-    #    for k in sorted(time_values.keys()):
-    #        time_values = total_values[key]
-    #        values = time_values[k]
-    #        print key + ", " + k + ": " + str(len(values))
-
+''' Stop transmission '''
 def stopTransmission():
+    global _running
     print "Stopping transmission..."
     _running = False
+    sys.exit()
 
 '''
 Useless testing
