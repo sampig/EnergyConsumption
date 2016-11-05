@@ -11,6 +11,7 @@ import datetime
 import threading
 import sys
 import traceback
+import gc
 
 from ecclient.conf import properties_reader
 from ecclient.utils import devices_reader, file_util, sip_config
@@ -81,10 +82,17 @@ def writeBinaryData(dev_id, data_list):
     print "Transmitter: writing into file..." + dev_id + ", " + str(len(data_rows))
     file_util.writeToFile(dev_id, data_rows, True)
     flushData(dev_id)
+    time.sleep(5 * 60)
+    cleanup()
 
 ''' '''
 def flushData(dev_id):
     file_util.flush(dev_id)
+
+''' garbage collection '''
+def cleanup():
+    gc.collect()
+    # gc.get_objects()
 
 '''
 Transmit data from multiple sources
