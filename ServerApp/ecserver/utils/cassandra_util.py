@@ -56,7 +56,7 @@ class CassandraManager():
         session = self.connection.getSession()
         ec_date = timestamp[0:8]
         ec_time = timestamp[8:14]
-        if (values is not None):
+        if (values is not None or len(values) < 8):
             ec_values = values
             # arr_value = values.split(delimiter)
             l = len(values)
