@@ -73,7 +73,7 @@ while True:
     else:
         break
 
-print "Testing\ncheck result:"
+print "Client Testing\ncheck result:"
 print "In <" + file_handler.name + "> this file,"
 print "there are <" + str(count_hour) + "> data in",
 print "<" + hour_str + ">."

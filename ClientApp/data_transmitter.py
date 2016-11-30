@@ -57,7 +57,7 @@ def sendData(dev_id, time_str, data_arr, start_pos):
     # startus = struct.unpack("i", data_arr[0][0:4])[0]
     # endus = struct.unpack("i", data_arr[l - 1][0:4])[0]
     # msg_str = dev_id + "|" + str(time_str) + "|" + str(startus) + "|" + str(endus) + "|" + str(l) + "|" + str(";".join(data_arr))
-    msg_str = dev_id + "|" + str(time_str) + "|" + str(";".join(data_arr))
+    msg_str = dev_id + "|" + str(time_str) + "|" + str(";".join(data_arr)) + "||"
     # data format: dev_id|YYYYMMDDhhmissSSSSSS|SSSSSS,value;SSSSSS,value;...
     # print "Transmitter: sending " + str(len(data_arr)) + " packets of " + dev_id + " to server..." + str(start_pos)
     buddy.send_pager(msg_str)
@@ -258,7 +258,7 @@ def transmitData():
 Transmit data from a single source
 '''
 def transmitDataSingleSource():
-    global _running
+    global _running, buddy
 
     mac_address = devices_reader.getDevices()[0][0]
 
@@ -333,6 +333,12 @@ def transmitDataSingleSource():
                             time_s_check = s_check
                             values_second = []
                             counter = 0
+                            # print "info:", buddy.info().online_status
+                            if (buddy.info().online_status==1): #online
+                                print "Transmitter: Connected to server.", now_t
+                            else:
+                                print "Transmitter: Disconnected to server.", now_t
+                                buddy.subscribe()
                         start_pos = len(values_second)
 
                     v = struct.pack("i", us) + struct.pack("f", (1234.456 + int(us / 100)))

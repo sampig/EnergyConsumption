@@ -28,11 +28,17 @@ class ECAccountCallback(pjsua.AccountCallback):
         return (202, None)
 
 class MyBuddyCallback(pjsua.BuddyCallback):
+    #global is_server_online
     def __init__(self, buddy=None):
         pjsua.BuddyCallback.__init__(self, buddy)
 
     def on_state(self):
-        print self.buddy.info().uri, "is", self.buddy.info().online_text
+        print time.time(), ":", self.buddy.info().uri, "is", self.buddy.info().online_text
+        if (self.buddy.info().online_status==1): #online
+            pass
+        else:
+            self.buddy.subscribe()
+            print "Reconnect... "
 
     def on_pager(self, mime_type, body):
         print "Instant message from", self.buddy.info().uri,
@@ -86,6 +92,7 @@ def connect():
 
         # my_sip_uri = "sip:" + pjsua_transport.info().host + ":" + str(pjsua_transport.info().port)
 
+        # try to subscribe
         buddy = acc.add_buddy(server_uri, cb=MyBuddyCallback())
         buddy.subscribe()
 
