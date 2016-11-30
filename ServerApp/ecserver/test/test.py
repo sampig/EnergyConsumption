@@ -65,7 +65,7 @@ for row in rows:
         #break;
 
 
-print "Testing\ncheck result:"
+print "Server Testing\ncheck result:"
 print "The device <" + device_id + ">"
 print "has received <" + str(count_hour) + ">(" + str(c_hour) + ") data in",
 print "<" + date_str + hour_str + ">."

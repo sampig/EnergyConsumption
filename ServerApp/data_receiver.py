@@ -45,9 +45,10 @@ class ClientCallback(sip_config.MyBuddyCallback):
         global db_manager
         first = body.index("|")
         second = body.index("|", first + 1)
+        third = body.index("||", second + 1)
         dev_id = body[0:first]
         time_str = datetime.datetime.fromtimestamp(float(body[(first + 1):second])).strftime("%Y%m%d%H%M%S")
-        data_str = body[(second + 1):]
+        data_str = body[(second + 1):third]
         # arr = body.split("|")
         # data_arr = arr[2].split(";")
         # count = len(data_arr)
@@ -148,6 +149,10 @@ def receiveData():
         # time.sleep(SLEEP_TIME)
         # print "current buddy list:", str(len(buddy_list))
         pass
+
+# 
+def calculateChecksum():
+    pass
 
 if __name__ == "__main__":
     startListening()
