@@ -12,6 +12,9 @@ Table of contents
   * [Schedule](#schedule)
   * [Task](#task)
 * [Scanner App](#scanner-app)
+* [Client App](#client-app)
+* [Server App](#server-app)
+* [Web Server](#web-server)
 
 ## Data Transfer
 
@@ -32,17 +35,32 @@ Table of contents
 5. Iteration 5 - Final
   1. Week 25-26 (10.03-10.16): Presentation
   2. Week 27 (10.17-10.23): Code Submission
-  3. Week 28-32 (10.24-11.27): Report
+  3. Week 28-32 (10.24-11.30): Report
 
 ### Task
 
 | Task  | Intro | Status |
 | -------------- | ------------------ | ------------- |
-| Reliable Data Transfer | Build/Use reliable protocol to transfer data. | In Progress |
-| Data Synchronization |  | Not Started |
+| Scanner App | An android App for scanning QR code to get graph about energy consumption. | Done |
+| Client App | An Python App to collect data of energy consumption and transmit data. | Done |
+| Server App | An Python App to receive data and store data into database. | Done |
+| Web Service | An web server provides web service about data of energy consumption. | Done |
 
 
 
 ## Scanner App
 
+An android App for scanning QR code to get graph about energy consumption.
+
+## Client App
+
+An Python App to collect data of energy consumption and transmit data.
+
+## Server App
+
+An Python App to receive data and store data into database.
+
+## Web Server
+
+An web server provides web service about data of energy consumption.
 
