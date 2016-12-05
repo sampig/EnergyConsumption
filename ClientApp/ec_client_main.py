@@ -38,6 +38,9 @@ args = parser.parse_args()
 ##########################################################################
 '''
 
+def logStr():
+    return "Client Main [" + time.strftime("%Y-%m-%d %H:%M:%S") + "]: " # __file__
+
 ''' handle with CTRL+C '''
 def sigint_handler(signum, frame):
     # write data into file
@@ -47,8 +50,8 @@ def sigint_handler(signum, frame):
     try:
         data_generator.stopDataGeneration()
     except:
-        print "Generation has already stopped."
-    print "Client Main: Stop pressing the CTRL+C!"
+        print logStr(), "Generation has already stopped."
+    print logStr(), "Stop pressing the CTRL+C!"
     sys.exit(1)
 
 signal.signal(signal.SIGINT, sigint_handler)
@@ -62,6 +65,7 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 
 if args.datagen is not None and args.datagen == "True":
+    print logStr(), "Data generation is starting..."
     if args.datagenfreq is not None:
         data_generator.startDataGeneration(0, args.datagenfreq)
     else:
@@ -69,11 +73,11 @@ if args.datagen is not None and args.datagen == "True":
 
 if args.datastop is not None:
     if args.datastop >= 0:
-        print "Client Main: Data generation will stop in " + str(args.datastop) + " seconds."
+        print logStr(), "Data generation will stop in " + str(args.datastop) + " seconds."
         time.sleep(args.datastop)
         threading.Thread(target=data_generator.stopDataGeneration, args=[]).start()
     else:
-        print "Client Main: Data generation will NOT stop automatically."
+        print logStr(), "Data generation will NOT stop automatically."
 else:
     threading.Thread(target=data_generator.stopDataGeneration, args=[]).start()
 
@@ -84,7 +88,7 @@ else:
 ##########################################################################
 '''
 
-print "Client Main: Start transmitting data..."
+print logStr(), "Start transmitting data..."
 transmit_thread = threading.Thread(target=data_transmitter.transmitDataSingleSource, args=[])
 #transmit_thread.daemon = True
 transmit_thread.start()
@@ -95,10 +99,11 @@ transmit_thread.start()
 ##########################################################################
 '''
 
-print "Client Main: Start data synchronization..."
-#sync_thread = threading.Thread(target = sync_client.startSync, args = [])
+print logStr(), "Start data synchronization..."
+sync_thread = threading.Thread(target = sync_client.startSync, args = [])
 #sync_thread.daemon = True
-#sync_thread.start()
+time.sleep(10)
+sync_thread.start()
 
 while True:
     time.sleep(1000)

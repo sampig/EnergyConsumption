@@ -25,6 +25,9 @@ from ostinato.protocols.hexdump_pb2 import hexDump
 from ecclient.conf import properties_reader
 from ecclient.utils import devices_reader
 
+def logStr():
+    return "Data Generation [" + time.strftime("%Y-%m-%d %H:%M:%S") + "]: "
+
 ''' start data generation '''
 def startDataGeneration(num=1, freq=44000):
     global dataGen, mac_addresses
@@ -45,7 +48,7 @@ def startDataGeneration(num=1, freq=44000):
     dst_ip = 0x7f000001
     src_port = 80
     dst_port = 17878
-    print "Starting data generation by Ostinato..."
+    print logStr(), "Starting data generation by Ostinato..."
     print "\tnumber of devices: " + str(num)
     print "\tfrequency of data generation: " + str(freq) + "\n"
     while i < num:
@@ -63,7 +66,7 @@ def startDataGeneration(num=1, freq=44000):
             #src_mac += 1#src_mac = int(mac_addresses[i], 16) #
             #dst_port += 1
         except:
-            print "Error"
+            print logStr(), "Error"
             # dataGen.stream_stop()
             exit
     dataGen.start_stream()
@@ -71,7 +74,7 @@ def startDataGeneration(num=1, freq=44000):
 ''' stop data generation '''
 def stopDataGeneration():
     time.sleep(10)
-    print "Stopping data generation..."
+    print logStr(), "Stopping data generation..."
     try:
         dataGen.stop_stream()
         dataGen.disconnect()
@@ -84,7 +87,7 @@ def stopDataGeneration():
 ''' handle with CTRL+C '''
 def sigint_handler(signum, frame):
     stopDataGeneration()
-    print 'Stop pressing the CTRL+C!'
+    print logStr(), "Stop pressing the CTRL+C!"
 
 
 '''

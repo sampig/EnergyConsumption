@@ -20,6 +20,9 @@ _running = True
 
 SAVE_FREQ_MIN = properties_reader.getSaveFrequency()
 
+def logStr():
+    return "Data Transmitter [" + time.strftime("%Y-%m-%d %H:%M:%S") + "]: "
+
 ''' handle with packet header '''
 def processEth(data):
     # Ehternet II: destination mac, source mac, type
@@ -43,7 +46,7 @@ def processPort(data):
 ''' connect to SIP server '''
 def sipConnect():
     global buddy
-    print "Connected to sip"
+    print logStr(), "Connecting to sip..."
     buddy = sip_config.connect()
     while not buddy:
         time.sleep(1)
@@ -69,19 +72,24 @@ def writeData(dev_id, time_str, data_list):
     for t in sorted(data_list.keys()):
         for d in data_list[t]:
             data_rows.append(str(time_second) + "." + d)
-    print "Transmitter: writing into file..." + dev_id + ", " + str(len(data_rows))
-    file_util.writeToFile(dev_id, data_rows, False)
+    print logStr(), "Writing into file..." + dev_id + ", " + str(len(data_rows))
+    file_util.writeToDataFile(dev_id, data_rows, False)
 
 ''' write data (binary) into file '''
 def writeBinaryData(dev_id, data_list):
     data_rows = []
     for t in sorted(data_list.keys()):
+        data_second = []
         for d in data_list[t]:
             us = struct.unpack("i", d[0:4])[0]
-            data_rows.append(struct.pack("d", (int(t) + us / 1000000.0)) + d[4:])
-    print "Transmitter: writing into file..." + dev_id + ", " + str(len(data_rows))
-    file_util.writeToFile(dev_id, data_rows, True)
+            row = struct.pack("d", (int(t) + us / 1000000.0)) + d[4:]
+            data_rows.append(row)
+            data_second.append(row)
+        file_util.writeToChecksumFile(dev_id, data_second, t, True)
+    file_util.writeToDataFile(dev_id, data_rows, True)
+    print logStr(), "Writing into data file and checksum files..." + dev_id + ", " + str(len(data_rows))
     flushData(dev_id)
+    # try to avoid getting "killed"
     time.sleep(5 * 60)
     cleanup()
 
@@ -287,7 +295,7 @@ def transmitDataSingleSource():
     start_pos = 0
 
     sock = socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.htons(0x800))
-    print "\n\nReceiving data from a device...\n"
+    print "\n\n", logStr(), "Receiving data from a device...\n"
 
     # count = 0
     while _running:  # len(pkt) > 0:
@@ -334,10 +342,12 @@ def transmitDataSingleSource():
                             values_second = []
                             counter = 0
                             # print "info:", buddy.info().online_status
-                            if (buddy.info().online_status==1): #online
-                                print "Transmitter: Connected to server.", now_t
+                            # print buddy._cb.on_state()
+                            if (buddy.info().online_status == 1):  # online
+                                # print "Transmitter: Connected to server.", now_t
+                                pass
                             else:
-                                print "Transmitter: Disconnected to server.", now_t
+                                print logStr(), "Disconnected to server."
                                 buddy.subscribe()
                         start_pos = len(values_second)
 
@@ -347,14 +357,14 @@ def transmitDataSingleSource():
             else:
                 continue
         except:
-            print "Transmitter: unexpected error:", sys.exc_info()[0]
+            print logStr(), "Unexpected error:", sys.exc_info()[0]
             traceback.print_exc()
             break
 
 ''' Stop transmission '''
 def stopTransmission():
     global _running
-    print "Stopping transmission..."
+    print logStr(), "Stopping transmission..."
     _running = False
     sys.exit()
 

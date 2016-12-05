@@ -14,6 +14,9 @@ pending_uri = None
 pjsua_lib = None
 pjsua_transport = None
 
+def logStr():
+    return "SIP Config [" + time.strftime("%Y-%m-%d %H:%M:%S") + "]: "
+
 class ECAccountCallback(pjsua.AccountCallback):
     def __init__(self, account=None):
         pjsua.AccountCallback.__init__(self, account)
@@ -28,17 +31,18 @@ class ECAccountCallback(pjsua.AccountCallback):
         return (202, None)
 
 class MyBuddyCallback(pjsua.BuddyCallback):
-    #global is_server_online
+    # global is_server_online
     def __init__(self, buddy=None):
         pjsua.BuddyCallback.__init__(self, buddy)
 
     def on_state(self):
-        print time.time(), ":", self.buddy.info().uri, "is", self.buddy.info().online_text
-        if (self.buddy.info().online_status==1): #online
+        self.buddy.subscribe()
+        # print time.time(), ":", self.buddy.info().uri, "is", self.buddy.info().online_text
+        if (self.buddy.info().online_status == 1):  # online
             pass
         else:
             self.buddy.subscribe()
-            print "Reconnect... "
+            # print "Reconnect... "
 
     def on_pager(self, mime_type, body):
         print "Instant message from", self.buddy.info().uri,
@@ -47,8 +51,8 @@ class MyBuddyCallback(pjsua.BuddyCallback):
 
     def on_pager_status(self, body, im_id, code, reason):
         if code >= 300:
-            #print "Message delivery failed for message",
-            #print body, "to", self.buddy.info().uri, ":", reason
+            # print "Message delivery failed for message",
+            # print body, "to", self.buddy.info().uri, ":", reason
             pass
 
     def on_typing(self, is_typing):
@@ -57,9 +61,11 @@ class MyBuddyCallback(pjsua.BuddyCallback):
         else:
             print self.buddy.info().uri, "stops transferring"
 
+    def test(self):
+        print logStr(), "online_status:", self.buddy.info().online_status
+
 def logCB(level, err_str, err_len):
-    print "(" , str(err_len), ")", err_str
-    pass
+    print logStr(), "(" , str(err_len), ")", err_str
 
 def connect():
     global pjsua_lib, pjsua_transport
@@ -82,7 +88,7 @@ def connect():
         transportConfig = pjsua.TransportConfig(port=PORT, bound_addr='', public_addr=HOSTNAME)
         pjsua_transport = pjsua_lib.create_transport(pjsua.TransportType.UDP, transportConfig)
 
-        print "\nListening on", pjsua_transport.info().host, ":", pjsua_transport.info().port, "\n"
+        print logStr(), "Listening on", pjsua_transport.info().host, ":", pjsua_transport.info().port, "\n"
 
         # Start the library
         pjsua_lib.start()
@@ -96,11 +102,12 @@ def connect():
         buddy = acc.add_buddy(server_uri, cb=MyBuddyCallback())
         buddy.subscribe()
 
-        print "connect to: " + server_uri
+        print logStr(), "connect to: " + server_uri
 
         return buddy
 
     except pjsua.Error, e:
+        print logStr()
         print "Exception: " + str(e)
         pjsua_lib.destroy()
         pjsua_lib = None
@@ -127,7 +134,7 @@ if __name__ == "__main__":
         #
         arr = []
         time_second = str(1476612899)
-        for i in xrange(0,200):
+        for i in xrange(0, 200):
             arr.append("123456," + str(1234.456))
         msg = "aabbccddeeff|" + time_second + "|" + ";".join(arr)
         if msg == "":
@@ -137,7 +144,7 @@ if __name__ == "__main__":
             print "Send " + str(len(arr)) + " to server." + str(len(msg))
         #
         arr = []
-        for i in xrange(0,100):
+        for i in xrange(0, 100):
             arr.append("20160909151515123456," + str(1234.456))
         msg = "aabbccddeeff|" + time_second + "|" + "|;".join(arr)
         if msg == "":
@@ -148,8 +155,8 @@ if __name__ == "__main__":
         #
         arr = []
         import struct
-        for i in xrange(0,500):
-            arr.append(struct.pack("h",9999) + struct.pack("f",1234.456))
+        for i in xrange(0, 500):
+            arr.append(struct.pack("h", 9999) + struct.pack("f", 1234.456))
         msg = "aabbccddeeff|" + time_second + "|" + ";".join(arr)
         if msg == "":
             buddy.send_typing_ind(False)
@@ -158,15 +165,15 @@ if __name__ == "__main__":
             print "Send " + str(len(arr)) + " to server." + str(len(msg))
         #
         arr = []
-        for i in xrange(0,350):
-            arr.append(struct.pack("i",999999) + struct.pack("f",1234.456))
+        for i in xrange(0, 350):
+            arr.append(struct.pack("i", 999999) + struct.pack("f", 1234.456))
         d = ";".join(arr)
         msg = "aabbccddeeff|" + time_second + "|" + d
         if msg == "":
             buddy.send_typing_ind(False)
         else:
             buddy.send_pager(msg)
-            print "Send " + str(len(arr)) + "|" + str((len(d) + 1)/9) + " to server." + str(len(msg))
+            print "Send " + str(len(arr)) + "|" + str((len(d) + 1) / 9) + " to server." + str(len(msg))
         # time.sleep(1/4400)
     disconnect()
 
