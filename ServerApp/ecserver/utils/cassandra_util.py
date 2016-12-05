@@ -11,6 +11,12 @@ from cassandra.cluster import Cluster
 from ecserver.conf import properties_reader
 from ecserver.utils import checksum_util
 
+def logStr(classname):
+    if classname is None:
+        return "Cassandra Util [" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]: "
+    else:
+        return "Cassandra Util - " + classname + " [" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]: "
+
 '''
 # The CassandraConnection class provides the connection including cluster and session of Cassandra.
 # The configuraion of the connection is stored in the 'config.properties'.
@@ -23,8 +29,18 @@ class CassandraConnection():
     # Connect to the Cassandra server.
     def __connect(self):
         hosts = [properties_reader.getCassandraHost()]
-        self.cluster = Cluster(hosts, port=properties_reader.getCassandraPort())
-        self.session = self.cluster.connect(properties_reader.getCassandraKeyspace())
+        self.cluster = None
+        self.session = None
+        try:
+            self.cluster = Cluster(hosts, port=properties_reader.getCassandraPort())
+            self.session = self.cluster.connect(properties_reader.getCassandraKeyspace())
+            print logStr(self.__class__.__name__),
+            print "Connect to database ", hosts, "Successfully."
+        except:
+            print logStr(self.__class__.__name__),
+            print "Cannot connect to database ", hosts,
+            print ". Please check the database and restart the program.",
+            print "Otherwise, the data will NOT be stored!"
 
     def getCluset(self):
         return self.cluster
@@ -46,6 +62,10 @@ class CassandraManager():
 
     def insertConsumption(self, row_data):
         session = self.connection.getSession()
+        if session is None:
+            print logStr(self.__class__.__name__),
+            print "There is NO database connection!"
+            return
         # print "inserting dc: ", row_data.device_id, timestamp, row_data.count
         insert_stmt = session.prepare("INSERT INTO " + self.table_consumption +
                                       " (device_id, ec_date, ec_time, start_us, end_us, ec_consumption_values, values_count, values_checksum, insert_time)" +
@@ -54,13 +74,17 @@ class CassandraManager():
 
     def insertConsumptionRaw(self, device_id, timestamp, values, delimiter="\n"):  # count=0, startus=0, endus=0,
         session = self.connection.getSession()
+        if session is None:
+            print logStr(self.__class__.__name__),
+            print "There is NO database connection!"
+            return
         ec_date = timestamp[0:8]
         ec_time = timestamp[8:14]
-        if (values is not None):
-            ec_values = values
+        if (values is not None and len(values) >= 8):
+            ec_values = values + "\n"
             # arr_value = values.split(delimiter)
             l = len(values)
-            values_count = (l + 1) / 9  # len(arr_value)  # int(count) #
+            values_count = (l) / 9  # len(arr_value)  # int(count) #
             values_checksum = None  # checksum_util.getArrayMD5(values)
             start_us = str(struct.unpack("i", values[0:4])[0])  # "{:06d}".format(
             # ec_values = start_us + "," + "{:.3f}".format(struct.unpack("f", values[4:8])[0])
@@ -85,6 +109,24 @@ class CassandraManager():
                                       " VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())")
         session.execute(insert_stmt, [device_id, ec_date, ec_time, start_us, end_us, ec_values, values_count, values_checksum])
 
+    def insertChecksumP(self, device_id, timestamp, values_checksum, values_count):
+        session = self.connection.getSession()
+        ec_date = timestamp[0:8]
+        ec_time = timestamp[8:14]
+        insert_stmt = session.prepare("INSERT INTO " + self.table_checksum +
+                                      " (device_id, ec_date, ec_time, ec_type, values_count, values_checksum, check_times)" +
+                                      " VALUES (?, ?, ?, 'P', ?, ?, 0)")
+        session.execute(insert_stmt, [device_id, ec_date, ec_time, values_count, values_checksum])
+
+    def insertChecksumS(self, device_id, timestamp, values_checksum, values_count):
+        session = self.connection.getSession()
+        ec_date = timestamp[0:8]
+        ec_time = timestamp[8:14]
+        insert_stmt = session.prepare("INSERT INTO " + self.table_checksum +
+                                      " (device_id, ec_date, ec_time, ec_type, values_count, values_checksum, check_times)" +
+                                      " VALUES (?, ?, ?, 'S', ?, ?, 0)")
+        session.execute(insert_stmt, [device_id, ec_date, ec_time, values_count, values_checksum])
+
     def getSingleConsumption(self, row_data):
         session = self.connection.getSession()
         select_stmt = session.prepare("SELECT device_id, ec_date, ec_time, start_us, end_us, ec_consumption_values, values_count, values_checksum," +
@@ -102,6 +144,41 @@ class CassandraManager():
                                       " FROM " + self.table_consumption +
                                       " WHERE device_id=? AND ec_date=? AND ec_time=? AND start_us=? AND end_us=?")
         return session.execute(select_stmt, [device_id, ec_date, ec_time, start_us, end_us])
+    
+    def getAllConsumptionP(self, device_id, timestamp):
+        session = self.connection.getSession()
+        ec_date = timestamp[0:8]
+        # ec_time = timestamp[8:14]
+        select_stmt = session.prepare("SELECT device_id, ec_date, ec_time, start_us, end_us, ec_consumption_values, values_count, values_checksum," +
+                                      " unixTimestampOf(insert_time) AS insert_timestamp" +
+                                      " FROM " + self.table_consumption +
+                                      " WHERE device_id=? AND ec_date=?" + #AND ec_time=?
+                                      " ORDER BY ec_date, ec_time, start_us " +
+                                      " ALLOW FILTERING")
+        return session.execute(select_stmt, [device_id, ec_date]) #, ec_time
+        
+        
+    def getChecksumPeriodValue(self, device_id, time_str):
+        session = self.connection.getSession()
+        select_stmt = session.prepare("SELECT device_id, ec_date, ec_time, ec_type, values_count, values_checksum" +
+                                      " FROM " + self.table_checksum +
+                                      " WHERE device_id=? AND ec_date=? AND ec_time=? AND ec_type=?")
+        return session.execute(select_stmt, [device_id, time_str[0:8], time_str[8:14], "P"])
+    
+    def getChecksumSecValue(self, device_id, time_str):
+        session = self.connection.getSession()
+        select_stmt = session.prepare("SELECT device_id, ec_date, ec_time, ec_type, values_count, values_checksum" +
+                                      " FROM " + self.table_checksum +
+                                      " WHERE device_id=? AND ec_date=? AND ec_time=? AND ec_type=?")
+        return session.execute(select_stmt, [device_id, time_str[0:8], time_str[8:14], "S"])
+    
+    def deleteConsumption(self, device_id, time_str):
+        session = self.connection.getSession()
+        ec_date = timestamp[0:8]
+        ec_time = timestamp[8:14]
+        delete_stmt = session.prepare("DELETE FROM " + self.table_consumption +
+                                      " WHERE device_id=? AND ec_date=? AND ec_time=?")
+        session.execute(delete_stmt, [device_id, ec_date, ec_time])
 
 '''
 # The DataConsumption class is the model of data

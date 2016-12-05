@@ -7,9 +7,10 @@ import argparse
 import signal
 import sys
 import threading
+import time
 
 import data_receiver
-#import sync_server
+import sync_server
 
 '''
 ##########################################################################
@@ -28,9 +29,12 @@ args = parser.parse_args()
 ##########################################################################
 '''
 
+def logStr():
+    return "Server Main [" + time.strftime("%Y-%m-%d %H:%M:%S") + "]: " # __file__
+
 ''' handle with CTRL+C '''
 def sigint_handler(signum, frame):
-    print 'Stop pressing the CTRL+C!'
+    print logStr(), "Stop pressing the CTRL+C!"
     sys.exit(1)
 
 signal.signal(signal.SIGINT, sigint_handler)
@@ -43,7 +47,7 @@ signal.signal(signal.SIGINT, sigint_handler)
 '''
 
 data_receiver.startListening()
-print "Server Main: Start receiving data..."
+print logStr(), "Start receiving data..."
 receive_thread = threading.Thread(target=data_receiver.receiveData, args=[])
 #receive_thread.daemon = True
 receive_thread.start()
@@ -54,8 +58,8 @@ receive_thread.start()
 ##########################################################################
 '''
 
-print "Server Main: Start data synchronization..."
-#sync_thread = threading.Thread(target = sync_server.startSync, args = [])
-#sync_thread.start()
+print logStr(), "Start data synchronization..."
+sync_thread = threading.Thread(target = sync_server.startSync, args = [])
+sync_thread.start()
 
 

@@ -21,6 +21,7 @@ Table of contents
   * [Implementation](#implementation)
   	* [Data Files](#data-files)
   	* [Configuration File](#configuration-file)
+  * [Manual](#manual)
   * [References](#references)
 
 ## Preparation
@@ -85,11 +86,15 @@ sudo python ./setup.py install
 	* sync_client.py
 	* configuration
 		* properties_reader.py
+		* config.properties
 	* utilities
 		* checksum_util.py
 		* devices_reader.py
+		* devices.dat (currently change to use the first line)
 		* file_util.py
 		* sip_config.py
+	* test
+		* test.py
 
 ## Design
 
@@ -117,16 +122,59 @@ sudo python ./setup.py install
 
 Configuration file is in ecclient/conf directory. Its format is:
 
-```
-[Category]
-[key]=[values]
-```
+> [Category]
+> [key]=[values]
 
 
-## Testing
+## Manual
+
+Before starting, change the _config.properties_ files:
+
+> [Transmit]
+> transmit.savefreq=30 # save data file every 30 minutes
+> transmit.savefilepath=/home/zhuzhu/Documents/project/test # the path for data files
+> transmit.savefilefmt=[device_id]_[timestamp_long].csv # file name format for data files
+> 
+> [Ostinato] # configuration for ostinato
+> ostinato.hostname=127.0.0.1
+> ostinato.port=7878
+> ostinato.txport=2
+> ostinato.rxport=2
+> 
+> [Files]
+> file.devices=devices.dat # device information
+> 
+> [SIP]
+> sip.public_addr=127.0.0.1 # SIP client URI: public address
+> sip.port=23333 # SIP client URI: port
+> sip.serveruri=sip:127.0.0.1:34567 # the SIP Server URI
+> 
+> [Sync]
+> sync.savefilepath=/home/zhuzhu/Documents/project/test/cs # the path for checksum files
+> sync.syncfreq=30 # sync every 30 minutes
+> sync.savefilefmt=[device_id]_[timestamp_long]_[type].checksum # file name format for checksum files
+> sync.serverip=127.0.0.1 # Sync Server: address
+> sync.serverport=27979 # Sync Server: port
+
+Start running the client:
+
+``` shell
+sudo python ec_client_main.py -d True -f 1 -s -1
+usage: 
+  -d True|False, --datagen True|False
+                        with data generation or not
+  -f frequency(int), --datagenfreq frequency(int)
+                        the frequency of the data generation
+  -s time(seconds), --datastop time(seconds)
+                        stop data generation or not (less than 0 means no stop)
+
+nohup sudo python -u ec_client_main.py -d True -f 44000 -s -1 > client.log 2>&1 &
+```
+
+Start checking the result of testing:
 
 ```shell
-python test.py -f [filepath] -d [YYYYMMDDhh[miss]]
+python test.py -f [filename] -d [test_datetime(yyyymmddhhmiss)]
 ```
 
 

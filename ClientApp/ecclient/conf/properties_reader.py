@@ -56,6 +56,14 @@ def getSyncServer():
     port = config.getint("Sync","sync.serverport")
     return (ip, port)
 
+def getSyncFrequency():
+    freq = config.getint("Sync","sync.syncfreq")
+    if freq <= 0:
+        freq = 30
+    if freq > 60:
+        freq = 60
+    return freq
+
 if __name__ == "__main__":
     print "Save Filename Format: ", getSaveFilenameFmt()
     print "Ostinato Config: ", getOstinatoConfigHost()
