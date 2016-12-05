@@ -49,7 +49,9 @@ session = cluster.connect("mykeyspace")
 select_stmt = session.prepare("SELECT device_id, ec_date, ec_time, start_us, end_us, ec_consumption_values, values_count, values_checksum," +
                               " unixTimestampOf(insert_time) AS insert_timestamp" + 
                               " FROM ec_consumption"
-                              " WHERE device_id=? AND ec_date=? ALLOW FILTERING") # AND ec_time=?
+                              " WHERE device_id=? AND ec_date=?" +
+                              #" ORDER BY ec_date, ec_time, start_us " +
+                              " ALLOW FILTERING") # AND ec_time=?
 print select_stmt
 rows = session.execute(select_stmt, [device_id, date_str])
 

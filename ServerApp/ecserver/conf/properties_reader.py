@@ -34,3 +34,7 @@ def getSyncHost():
     ip = config.get("Synchronization", "sync.ip")
     port = config.getint("Synchronization", "sync.port")
     return (ip, port)
+
+def getSyncFreq():
+    freq = config.getint("Synchronization", "sync.syncfreq")
+    return freq

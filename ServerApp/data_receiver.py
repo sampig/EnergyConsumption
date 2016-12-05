@@ -18,6 +18,7 @@ SLEEP_TIME = 5
 
 PUBLIC_ADDR = properties_reader.getSIPPublicAddr()
 PORT = properties_reader.getSIPPort()
+SYNC_FREQ_MIN = properties_reader.getSyncFreq()
 
 # pending_pres = None
 # pending_uri = None
@@ -32,10 +33,13 @@ db_manager = None
 
 values = []
 
+def logStr():
+    return "Data Receiver [" + time.strftime("%Y-%m-%d %H:%M:%S") + "]: "
+
 class ClientCallback(sip_config.MyBuddyCallback):
 
     def on_pager(self, mime_type, body):
-        # print "Instant message from", self.buddy.info().uri,
+        # print "Instant message from", self.buddy.info().uri
         # print "(", mime_type, "):"
         # print body
         self.handleData(body)
@@ -88,7 +92,7 @@ def serverListening():
 
         my_sip_uri = "sip:" + pjsua_transport.info().host + ":" + str(pjsua_transport.info().port)
 
-        print "\nPublic URI: " + my_sip_uri + "\n"
+        print logStr(), "Public URI: " + my_sip_uri + "\n"
 
         # start = datetime.datetime.now()
 
@@ -101,14 +105,14 @@ def serverListening():
                 buddy_list.append(buddy)
                 acc.buddy_uri_list.append(sip_config.pending_uri)
                 # start = datetime.datetime.now()
-                print "a client connected: " + sip_config.pending_uri
-                print "new buddy list (" + str(len(acc.buddy_uri_list)) + "):",
+                print logStr(), "a client connected: " + sip_config.pending_uri
+                print logStr(), "new buddy list (" + str(len(acc.buddy_uri_list)) + "):",
                 print acc.buddy_uri_list
                 sip_config.pending_pres = None
                 sip_config.pending_uri = None
             elif len(buddy_list) < 1:
                 time.sleep(SLEEP_TIME)
-                print "No clients. Continue listening..."
+                print logStr(), "No clients. Continue listening..."
             # else:
             #    if len(values) == 1:
             #        start = datetime.datetime.now()
@@ -145,12 +149,15 @@ def startListening():
 #
 def receiveData():
 
+    # freq_sec = SYNC_FREQ_MIN * 60  #
+    # now_time = time.time()
+
     while True:
         # time.sleep(SLEEP_TIME)
         # print "current buddy list:", str(len(buddy_list))
         pass
 
-# 
+#
 def calculateChecksum():
     pass
 
